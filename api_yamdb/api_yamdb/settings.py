@@ -22,8 +22,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'api',
-    'model'
+    'model',
+    'api.apps.ApiConfig',
+    'yamdb_content.apps.Yamdb_contentConfig',
 ]
 
 MIDDLEWARE = [

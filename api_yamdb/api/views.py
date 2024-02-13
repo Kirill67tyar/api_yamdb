@@ -37,3 +37,4 @@ class TitlesViewSet(viewsets.ModelViewSet):
         if self.action in ('list', 'retrieve'):
             return TitlesReadSerializer
         return TitlesWriteSerializer
+
