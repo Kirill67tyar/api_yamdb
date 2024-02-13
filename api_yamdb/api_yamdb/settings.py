@@ -24,7 +24,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'model',
     'api.apps.ApiConfig',
-    'yamdb_content.apps.Yamdb_contentConfig',
+    'rest_framework_simplejwt',
+    'yamdb_content.apps.YamdbContentConfig',
+    'accounts.apps.AccountsConfig',
 ]
 
 MIDDLEWARE = [
@@ -105,3 +107,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
+
+AUTH_USER_MODEL = 'accounts.User'
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+
+EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
