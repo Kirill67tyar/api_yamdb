@@ -1,6 +1,12 @@
 from rest_framework import serializers
-
-from model.models import Categories, Genres, Titles
+from rest_framework.relations import SlugRelatedField
+from model.models import (
+  Categories,
+  Genres,
+  Titles,
+  Comments,
+  Review
+                         )
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
@@ -46,3 +52,21 @@ class TitlesWriteSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Titles
+        
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = SlugRelatedField(slug_field='username', read_only=True)
+
+    class Meta:
+        model = Review
+        fields = '__all__'
+        read_only_fields = ('title',)
+
+
+class CommentsSerializer(serializers.ModelSerializer):
+    author = SlugRelatedField(slug_field='username', read_only=True)
+
+    class Meta:
+        model = Comments
+        fields = '__all__'
+        read_only_fields = ('title',)
