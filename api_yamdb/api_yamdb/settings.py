@@ -21,6 +21,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'model',
     'api.apps.ApiConfig',
     'yamdb_content.apps.Yamdb_contentConfig',
 ]
