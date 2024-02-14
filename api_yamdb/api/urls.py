@@ -19,18 +19,19 @@ router_v1.register(r"titles", TitleViewSet, basename="title")
 router_v1.register(r"genres", GenreViewSet, basename="genre")
 router_v1.register(r"categories", CategoryViewSet, basename="categorie")
 router_v1.register(
-    r"titles/(?P<title_id>\d+)/comments", CommentViewSet, basename="comments"
+    r"titles/(?P<title_id>\d+)/reviews",
+    ReviewViewSet,
+    basename="reviews"
 )
 router_v1.register(
-    r"titles/(?P<title_id>\d+)/reviews", ReviewViewSet, basename="reviews"
+    r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+    CommentViewSet,
+    basename="comments"
 )
 router_v1.register(r"users", UserModelViewSet, basename="users")
 
-urlpatterns_v1 = [
-    path("auth/signup/", register_user_view, name="signup"),    
-    path("", include(router_v1.urls)),
-    path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-]
 urlpatterns = [
-    path("v1/", include(urlpatterns_v1)),
+    path("v1/", include(router_v1.urls)),
+    path("v1/auth/signup/", register_user_view, name="signup"),
+    path('v1/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
 ]

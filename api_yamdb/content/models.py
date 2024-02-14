@@ -87,8 +87,8 @@ class Comment(models.Model):
         related_name='comments',
         verbose_name='Автор'
     )
-    titles = models.ForeignKey(
-        Title,
+    review = models.ForeignKey(
+        Review,
         on_delete=models.CASCADE,
         related_name='comments',
         verbose_name='Название'
