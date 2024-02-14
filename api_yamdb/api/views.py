@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.db.models import Avg
 from rest_framework import viewsets
+from rest_framework import permissions
 
 from content.models import Review, Title, Genre, Category
 from .permissions import IsAdminOrOwnerOrModeratorOrReadOnly
@@ -14,6 +15,13 @@ from .serializers import (
     TitleWriteSerializer,
 )
 
+class IsOwnerOrReadOnly(permissions.BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        return (
+            request.method in permissions.SAFE_METHODS
+            or obj.author == request.user
+        )
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
@@ -34,7 +42,7 @@ class GenreViewSet(viewsets.ModelViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('reviews__rating')).all()
     permission_classes = (IsOwnerOrReadOnly, )
-
+    
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
             return TitleReadSerializer

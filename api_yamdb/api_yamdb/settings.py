@@ -107,6 +107,7 @@ REST_FRAMEWORK = {
 
 }
 
-SIMPLE_JWT = {
-    'TOKEN_OBTAIN_SERIALIZER': 'accounts.serializers.TokenSerializer',
-}
+# SIMPLE_JWT = {
+# #     # 'TOKEN_OBTAIN_SERIALIZER': 'accounts.serializers.TokenSerializer',
+#     'TOKEN_OBTAIN_SERIALIZER': 'accounts.serializers.SecondMyTokenObtainPairSerializer',
+# }

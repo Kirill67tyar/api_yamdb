@@ -38,6 +38,11 @@ class Title(models.Model):
     category = models.ForeignKey(Category, verbose_name='Категория',
                                  on_delete=models.SET_NULL, null=True,
                                  blank=True)
+    # author = models.ForeignKey(
+    #     to=User,
+    #     on_delete=models.CASCADE,
+    #     verbose_name='Автор',
+    # )
 
     class Meta:
         verbose_name = 'Произведение'

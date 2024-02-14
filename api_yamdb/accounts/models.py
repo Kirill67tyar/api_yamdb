@@ -15,14 +15,10 @@ class User(AbstractUser):
         (ADMIN_ROLE, 'Администратор',),
         (OWNER_ROLE, 'Суперюзер Django ',),
     )
-    # ? ---------------------------------
     # username = models.CharField(
     #     max_length=150,
-    #     verbose_name='Имя пользователя',
+    #     unique=True,
     # )
-    # !accounts.User: (auth.E003) 'User.username' must be unique because it is named as the 'USERNAME_FIELD'.
-    # ? ---------------------------------
-
     bio = models.TextField(max_length=500, blank=True)
     role = models.CharField(
         max_length=9,
@@ -39,5 +35,6 @@ class User(AbstractUser):
         self.password = ''
         self.confirmation_code = urlsafe_base64_encode(force_bytes(self.email))
         return super().save(*args, **kwargs)
+
 
 
