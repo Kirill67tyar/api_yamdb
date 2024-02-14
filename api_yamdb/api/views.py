@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from django.db.models import Avg
 from rest_framework import viewsets
 
 from content.models import Review, Title, Genre, Category
@@ -17,30 +18,22 @@ from .serializers import (
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    # Если будет свой пермишен для доступа, без токена то можно заменить
-    # стандартный 'IsAuthenticatedOrReadOnly' на кастомный.
-    permission_classes = (IsAuthenticatedOrReadOnly, )
-    search_fields = ('name')
+    permission_classes = (IsOwnerOrReadOnly, )
+    search_fields = ('name', )
     lookup_field = 'slug'
 
 
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    # Если будет свой пермишен для доступа, без токена то можно заменить
-    # стандартный 'IsAuthenticatedOrReadOnly' на кастомный.
-    permission_classes = (IsAuthenticatedOrReadOnly, )
+    permission_classes = (IsOwnerOrReadOnly, )
     search_fields = ('name', )
     lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    # Чтобы получить правельный набор объектов, мне нужно увидеть,
-    # как будет выглядеть поле rating в классе Reviews.
-    queryset = Title.objects.all()
-    # Если будет свой пермишен для доступа, без токена то можно заменить
-    # стандартный 'IsAuthenticatedOrReadOnly' на кастомный.
-    permission_classes = (IsAuthenticatedOrReadOnly, )
+    queryset = Title.objects.annotate(rating=Avg('reviews__rating')).all()
+    permission_classes = (IsOwnerOrReadOnly, )
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
