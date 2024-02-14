@@ -1,12 +1,9 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import (
-    IsAuthenticated,
-    IsAuthenticatedOrReadOnly
-)
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework import viewsets
 
-from content.models import Title, Genre, Category
-from .permissions import IsOwnerOrReadOnly
+from content.models import Review, Title, Genre, Category
+from .permissions import IsAdminOrOwnerOrModeratorOrReadOnly
 from .serializers import (
     CategorySerializer,
     CommentSerializer,
@@ -51,23 +48,9 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleWriteSerializer
 
 
-class CommentViewSet(viewsets.ModelViewSet):
-    serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
-
-    def get_title(self):
-        return get_object_or_404(Title, pk=self.kwargs.get("title_id"))
-
-    def get_queryset(self):
-        return self.get_title().comments.all()
-
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user, title=self.get_title())
-
-
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+    permission_classes = [IsAdminOrOwnerOrModeratorOrReadOnly, ]
 
     def get_title(self):
         return get_object_or_404(Title, pk=self.kwargs.get("title_id"))
@@ -77,3 +60,17 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    permission_classes = [IsAdminOrOwnerOrModeratorOrReadOnly, ]
+
+    def get_review(self):
+        return get_object_or_404(Review, pk=self.kwargs.get("review_id"))
+
+    def get_queryset(self):
+        return self.get_review().comments.all()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, title=self.get_review())
