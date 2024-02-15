@@ -78,14 +78,24 @@ class Review(models.Model):
     class Meta:
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'author' ],
+                name='unique_key_title_author'
+            ),
+            # models.CheckConstraint(
+            #     name='%(app_label)s_%(class)s_prevent_self_follow',
+            #     check=~models.Q(user=models.F('following')),
+            # ),
+        ]
 
-    def __str__(self):
-        return self.text
+    # def __str__(self):
+    #     return self.text
 
 
 class Comment(models.Model):
     text = models.TextField('Текст')
-    created = models.DateTimeField('Дата добавления', auto_now_add=True)
+    pub_date = models.DateTimeField('Дата добавления', auto_now_add=True)
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

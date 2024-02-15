@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from django.db.models import Avg
 from rest_framework import permissions
 
-from content.models import Review, Title, Genre, Category
+from reviews.models import Review, Title, Genre, Category
 from api.permissions import IsAdminOrOwnerOrModeratorOrReadOnly, IsAdminOrReadOnly
 from api.serializers import (
     CategorySerializer,
@@ -111,6 +111,26 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleWriteSerializer
 
 
+# class ReviewViewSet(viewsets.ModelViewSet):
+#     serializer_class = ReviewSerializer
+#     permission_classes = [IsAdminOrOwnerOrModeratorOrReadOnly, ]
+
+#     def get_title(self):
+#         return get_object_or_404(Title, pk=self.kwargs.get("title_id"))
+
+#     def get_queryset(self):
+#         # if self.action == 'partial_update':
+#         #     self.request.user.reviews.all()
+#         return self.get_title().reviews.all()
+
+#     def perform_create(self, serializer):
+#         serializer.save(author=self.request.user, title=self.get_title())
+
+
+
+# ! ------------------------------------------------------------
+from rest_framework.exceptions import MethodNotAllowed, PermissionDenied
+
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [IsAdminOrOwnerOrModeratorOrReadOnly, ]
@@ -123,6 +143,19 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
+
+    def update(self, request, *args, **kwargs):
+        raise MethodNotAllowed("PUT method not allowed")
+
+    def partial_update(self, request, *args, **kwargs):
+        review = self.get_object()
+        if review.author == request.user:# or self.get_title().review.author == request.user:
+        # if (review.author == request.user and request.user.role == 'user') or request.user.role in ('moderator','admin', 'owner'):
+        # if review.author == request.user or request.user.is_moderator:
+            return super().partial_update(request, *args, **kwargs)
+        raise PermissionDenied("You do not have permission to update this review")
+
+# ! ------------------------------------------------------------
 
 
 class CommentViewSet(viewsets.ModelViewSet):
