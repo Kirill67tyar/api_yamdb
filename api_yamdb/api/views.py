@@ -1,8 +1,6 @@
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet, CharFilter, NumberFilter
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from django.db.models import Avg
-from rest_framework import permissions
 
 from reviews.models import Review, Title, Genre, Category
 from api.permissions import IsAdminOrOwnerOrModeratorOrReadOnly, IsAdminOrReadOnly
@@ -16,7 +14,6 @@ from api.serializers import (
 )
 from rest_framework.filters import SearchFilter
 from rest_framework import mixins, viewsets
-from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
 
@@ -35,6 +32,7 @@ class CategoryViewSet(ListCreateDestroyMixin):
     search_fields = ('name', )
     lookup_field = 'slug'
     lookup_url_kwarg = 'slug'
+    # ordering = ('-pub_date',)
     # http_method_names = ['get', 'post', 'patch', ]
 
 
@@ -85,25 +83,14 @@ class TitleFilter(FilterSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.annotate(rating=Avg('reviews__score')).all()
+    queryset = Title.objects.order_by("pk").annotate(rating=Avg('reviews__score'))
     permission_classes = (IsAdminOrReadOnly, )
     filter_backends = (SearchFilter, DjangoFilterBackend,)
     search_fields = ('name', )
-    pagination_class = PageNumberPagination
+    # pagination_class = PageNumberPagination
     filterset_class = TitleFilter
     http_method_names = ['get', 'post', 'patch', 'delete',]
 
-    # filter_backends = (SearchFilter, TitleFilter, )
-    # filterset_fields = ('genre__slug',)
-    # filterset_fields = ('genre',)
-
-    # def get_queryset(self):
-    #     queryset = Title.objects.all()
-    #     # Добыть параметр color из GET-запроса
-    #     slug = self.request.query_params.get('slug')
-    #     if slug is not None:
-    #         queryset = queryset.filter(genre__slug=slug)
-    #     return queryset
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -111,25 +98,9 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleWriteSerializer
 
 
-# class ReviewViewSet(viewsets.ModelViewSet):
-#     serializer_class = ReviewSerializer
-#     permission_classes = [IsAdminOrOwnerOrModeratorOrReadOnly, ]
-
-#     def get_title(self):
-#         return get_object_or_404(Title, pk=self.kwargs.get("title_id"))
-
-#     def get_queryset(self):
-#         # if self.action == 'partial_update':
-#         #     self.request.user.reviews.all()
-#         return self.get_title().reviews.all()
-
-#     def perform_create(self, serializer):
-#         serializer.save(author=self.request.user, title=self.get_title())
-
 
 
 # ! ------------------------------------------------------------
-from rest_framework.exceptions import MethodNotAllowed, PermissionDenied
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer

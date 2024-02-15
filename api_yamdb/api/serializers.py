@@ -77,29 +77,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
-    # author = SlugRelatedField(
-    #     default=serializers.CurrentUserDefault(),
-    #     read_only=True,
-    #     slug_field='username'
-    # )
-    """
-    text = models.TextField('Текст')
-    created = models.DateTimeField('Дата добавления', auto_now_add=True)
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='comments',
-        verbose_name='Автор'
-    )
-    review = models.ForeignKey(
-        Review,
-        on_delete=models.CASCADE,
-        related_name='comments',
-        verbose_name='Название'
-    )
-    """
+
     class Meta:
         model = Comment
-        # fields = '__all__'
         exclude = ('review',)
-        # read_only_fields = ('review', )

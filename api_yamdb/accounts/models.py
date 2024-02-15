@@ -44,3 +44,6 @@ class User(AbstractUser):
         self.password = ''
         self.confirmation_code = urlsafe_base64_encode(force_bytes(self.email))
         return super().save(*args, **kwargs)
+
+    class Meta:
+        ordering = ('pk',)
