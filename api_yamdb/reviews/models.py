@@ -47,7 +47,6 @@ class Title(models.Model):
     # )
 
     class Meta:
-        ordering = ('name',)
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
         default_related_name = 'titles'
