@@ -1,3 +1,5 @@
+from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
+from django.core.validators import RegexValidator
 from django.contrib.auth import get_user_model, authenticate
 from django.db.models import Q
 from rest_framework.serializers import (
@@ -17,7 +19,8 @@ User = get_user_model()
 class ExtendedUserModelSerializer(ModelSerializer):
     email = EmailField(
         max_length=254,
-        required=True
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all())]
     )
 
     class Meta:
@@ -30,6 +33,28 @@ class ExtendedUserModelSerializer(ModelSerializer):
             'bio',
             'role',
         )
+        # read_only_fields = ('role',)
+
+    def validate_role(self, value):
+        if value == 'owner':
+            raise ValidationError('blablalba')
+        return value
+    
+    def update(self, instance, validated_data):
+        validated_data.pop('role', None)
+        return super().update(instance, validated_data)
+
+        # validators = [
+        #     UniqueValidator(
+        #         queryset=User.objects.all(),
+        #         fields=('email', ),
+        #         # message=(
+        #         #     'Ошибка: вы уже подписаны на пользователя'
+        #         #     'доступного по ключу "following".'
+        #         #     'Нельзя подписываться дважды.'
+        #         # )
+        #     ),
+        # ]
 
 
 class UserGetTokenModelSerializer(ModelSerializer):
@@ -49,29 +74,26 @@ class UserGetTokenModelSerializer(ModelSerializer):
         )
 
 
-class UserModelSerializer(ModelSerializer):
-# class UserModelSerializer(Serializer):
+class UserModelSerializer(Serializer):
     email = EmailField(
         max_length=254,
         required=True
     )
-    # username = CharField(
-    #     max_length=150,
-    #     required=True
-    # )
-
-    class Meta:
-        model = User
-        fields = (
-            'username',
-            'email',
-        )
+    username = CharField(
+        max_length=150,
+        required=True,
+        validators=[
+            RegexValidator(
+                regex=r'^[\w.@+-]+$',
+                message='Неправильный формат поля username',
+            ),
+        ],
+    )
 
     def validate_username(self, value):
         if value == 'me':
             raise ValidationError('username не должен иметь значение "me"')
         return value
-
 
     def validate(self, data):
         username = data['username']
@@ -79,6 +101,10 @@ class UserModelSerializer(ModelSerializer):
         if User.objects.filter(Q(email=email) & ~Q(username=username)).exists():
             raise ValidationError(
                 'Пользователь с таким email уже зарегистрирован'
+            )
+        if User.objects.filter(~Q(email=email) & Q(username=username)).exists():
+            raise ValidationError(
+                'Пользователь с таким username уже зарегистрирован'
             )
         return data
 
@@ -94,6 +120,3 @@ class UserModelSerializer(ModelSerializer):
     #     #     return True
     #     # return result
     #     return super().is_valid(raise_exception)
-
-
-

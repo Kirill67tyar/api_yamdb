@@ -5,7 +5,12 @@ class IsAdminOrOwner(BasePermission):
 
     def has_permission(self, request, view):
         """Доступ разрушён в если клиент аутентифицирован."""
-        return request.user.is_authenticated and (request.user.role in ('admin', 'owner',))
+        # return request.user.is_authenticated and (request.user.role in ('admin', 'owner',))
+        if request.user.is_authenticated:
+            return (request.user.is_superuser or (request.user.role in ('admin', 'owner',))) #or list(filter(bool, request.path.split('/')))[-1] == 'me'
+        return False
+
+
 
     # def has_object_permission(self, request, view, obj):
     #     """
