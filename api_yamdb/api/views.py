@@ -134,33 +134,26 @@ from rest_framework.exceptions import MethodNotAllowed, PermissionDenied
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [IsAdminOrOwnerOrModeratorOrReadOnly, ]
+    http_method_names = ['get', 'post', 'patch', 'delete',]
+
 
     def get_title(self):
         return get_object_or_404(Title, pk=self.kwargs.get("title_id"))
 
+
     def get_queryset(self):
         return self.get_title().reviews.all()
+
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
 
-    def update(self, request, *args, **kwargs):
-        raise MethodNotAllowed("PUT method not allowed")
-
-    def partial_update(self, request, *args, **kwargs):
-        review = self.get_object()
-        if review.author == request.user:# or self.get_title().review.author == request.user:
-        # if (review.author == request.user and request.user.role == 'user') or request.user.role in ('moderator','admin', 'owner'):
-        # if review.author == request.user or request.user.is_moderator:
-            return super().partial_update(request, *args, **kwargs)
-        raise PermissionDenied("You do not have permission to update this review")
-
-# ! ------------------------------------------------------------
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [IsAdminOrOwnerOrModeratorOrReadOnly, ]
+    http_method_names = ['get', 'post', 'patch', 'delete',]
 
     def get_review(self):
         return get_object_or_404(Review, pk=self.kwargs.get("review_id"))
@@ -169,4 +162,4 @@ class CommentViewSet(viewsets.ModelViewSet):
         return self.get_review().comments.all()
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user, title=self.get_review())
+        serializer.save(author=self.request.user, review=self.get_review())

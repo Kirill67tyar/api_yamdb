@@ -14,7 +14,7 @@ class IsAdminOrOwnerOrModeratorOrReadOnly(BasePermission):
                 or request.user.role == 'admin'
                 or request.user.role == 'owner'
                 or request.user.role == 'moderator'
-            )
+            )# and request.method != 'PUT'
         return request.method in SAFE_METHODS
 
 

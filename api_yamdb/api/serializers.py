@@ -68,7 +68,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate(self, data):
         user = self.context['request'].user
         title_id = self.context['view'].kwargs.get('title_id')
-        if user.reviews.filter(title=title_id).exists():
+        if user.reviews.filter(title=title_id).exists() and self.context['request'].method != 'PATCH':
             raise serializers.ValidationError(
                 'Вы уже отправляли отзыв на это произведение'
             )
@@ -76,12 +76,12 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    # author = SlugRelatedField(slug_field='username', read_only=True)
-    author = SlugRelatedField(
-        default=serializers.CurrentUserDefault(),
-        read_only=True,
-        slug_field='username'
-    )
+    author = SlugRelatedField(slug_field='username', read_only=True)
+    # author = SlugRelatedField(
+    #     default=serializers.CurrentUserDefault(),
+    #     read_only=True,
+    #     slug_field='username'
+    # )
     """
     text = models.TextField('Текст')
     created = models.DateTimeField('Дата добавления', auto_now_add=True)
