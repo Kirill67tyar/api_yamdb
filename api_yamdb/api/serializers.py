@@ -57,11 +57,26 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
-
+    
     class Meta:
         model = Review
         fields = '__all__'
-        read_only_fields = ('title', )
+        read_only_fields = (
+            'title',
+              )
+    
+
+    def validate(self, data):
+        a = 1
+        return data
+        user = self.context['request'].user
+        title = self.context['title']
+        user.reviews.filter(title=).exists()
+        if Title.objects.filter(review__author=user).exists():
+            raise serializers.ValidationError(
+                'Вы уже отправляли отзыв на это произведение'
+            )
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):

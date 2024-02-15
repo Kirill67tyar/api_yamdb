@@ -55,7 +55,7 @@ class Title(models.Model):
 
 class Review(models.Model):
     text = models.TextField('Текст',)
-    created = models.DateTimeField(
+    pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True
     )
     author = models.ForeignKey(
@@ -70,7 +70,7 @@ class Review(models.Model):
         related_name='reviews',
         verbose_name='Название'
     )
-    rating = models.IntegerField(
+    score = models.IntegerField(
         'Рейтинг',
         validators=[MinValueValidator(1), MaxValueValidator(10)]
     )

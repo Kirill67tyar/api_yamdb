@@ -28,6 +28,7 @@ router_v1.register(
     CommentViewSet,
     basename="comments"
 )
+
 # router_v1.register(r"users/", UserModelViewSet, basename="users")
 router_v1.register(r"users", UserModelViewSet, basename="users")
 
