@@ -3,17 +3,12 @@ from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import action, api_view
 from rest_framework.filters import SearchFilter
-from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework_simplejwt.serializers import TokenObtainSerializer
-from rest_framework_simplejwt.tokens import RefreshToken, Token
-from rest_framework_simplejwt.views import TokenObtainPairView
 
 from accounts.permissions import IsAdminOrOwner
 from accounts.serializers import (ExtendedUserModelSerializer,
-                                  UserGetTokenModelSerializer,
                                   UserModelSerializer)
 from accounts.utils import send_email_confirmation_code
 
@@ -76,52 +71,4 @@ def register_user_view(request):
             email=user.email,
         )
         return Response(data=serializer.data, status=status.HTTP_200_OK)
-    return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class TokenObtainPairWithConfirmationView(TokenObtainPairView):
-    @staticmethod
-    @api_view(["POST"])
-    def obtain_confirmation_token(request):
-        username = request.data.get("username", None)
-        confirmation_code = request.data.get("confirmation_code", None)
-
-        if username and confirmation_code:
-            user = get_object_or_404(
-                User,
-                username=username,
-                confirmation_code=confirmation_code,
-            )
-            refresh = RefreshToken.for_user(user)
-            access_token = str(refresh.access_token)
-
-            return Response(
-                {"access": access_token}, status=status.HTTP_200_OK
-            )
-
-        return Response(
-            {"error": "Invalid username or confirmation_code"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-
-def generate_token(user):
-    token = Token.for_user(user)
-    return TokenObtainSerializer(instance=token).data
-
-
-@api_view(http_method_names=["POST"])
-def authenticate_user_view(request):
-
-    serializer = UserGetTokenModelSerializer(data=request.data)
-    if serializer.is_valid(raise_exception=False):
-        data = serializer.data
-        user = get_object_or_404(
-            User,
-            username=data["username"],
-            confirmation_code=data["confirmation_code"],
-        )
-        token = generate_token(user)
-        response_data = {"access": token["access_token"]}
-        return Response(data=response_data, status=status.HTTP_200_OK)
     return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)

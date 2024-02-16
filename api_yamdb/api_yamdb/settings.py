@@ -109,7 +109,6 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
 }
 
-# SIMPLE_JWT = {
-# 'TOKEN_OBTAIN_SERIALIZER': 'accounts.serializers.MyTokenObtainPairSerializer',
-# 'TOKEN_OBTAIN_SERIALIZER': 'accounts.serializers.SecondMyTokenObtainPairSerializer',
-# }
+SIMPLE_JWT = {
+    'TOKEN_OBTAIN_SERIALIZER': 'accounts.serializers.MyTokenObtainSerializer',
+}
