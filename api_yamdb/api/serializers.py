@@ -10,6 +10,8 @@ from reviews.models import (
 )
 
 
+ERROR_BAD_REQUEST = 'Вы уже отправляли отзыв на это произведение'
+
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -35,8 +37,9 @@ class TitleReadSerializer(serializers.ModelSerializer):
     rating = serializers.IntegerField(read_only=True)
 
     class Meta:
-        fields = '__all__'
         model = Title
+        fields = ('id', 'name', 'year', 'description',
+                  'genre', 'category', 'rating',)
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
@@ -51,7 +54,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category',)
         model = Title
 
 
@@ -68,10 +71,9 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate(self, data):
         user = self.context['request'].user
         title_id = self.context['view'].kwargs.get('title_id')
-        if user.reviews.filter(title=title_id).exists() and self.context['request'].method != 'PATCH':
-            raise serializers.ValidationError(
-                'Вы уже отправляли отзыв на это произведение'
-            )
+        if (user.reviews.filter(title=title_id).exists()
+                and self.context['request'].method != 'PATCH'):
+            raise serializers.ValidationError(ERROR_BAD_REQUEST)
         return data
 
 

@@ -1,22 +1,16 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.permissions import IsAuthenticated
 
 
-class IsAdminOrOwner(BasePermission):
+class IsAdminOrOwner(IsAuthenticated):
 
     def has_permission(self, request, view):
-        """Доступ разрушён в если клиент аутентифицирован."""
-        # return request.user.is_authenticated and (request.user.role in ('admin', 'owner',))
-        if request.user.is_authenticated:
-            return (request.user.is_superuser or (request.user.role in ('admin', 'owner',))) #or list(filter(bool, request.path.split('/')))[-1] == 'me'
+        """
+        Доступ разрушён если клиент аутентифицирован.
+        Является суперюзером, или его роль admin или owner.
+        """
+        if super().has_permission(request, view):
+            return bool(
+                request.user.is_superuser
+                or (request.user.role in ('admin', 'owner',))
+            )
         return False
-
-
-
-    # def has_object_permission(self, request, view, obj):
-    #     """
-    #     Доступ разрушён в 1м из 2х случаев:
-    #     1 - клиент автор поста.
-    #     2 - HTTP метод - GET | HEAD | OPTIONS.
-    #     Т.е. если не админ и не автор поста, то изменять и удалять нельзя.
-    #     """
-    #     return request.user == obj.author or request.method in SAFE_METHODS

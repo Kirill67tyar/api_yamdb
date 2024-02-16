@@ -1,8 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import TokenObtainPairView
 
-from accounts.views import register_user_view, UserModelViewSet, TokenObtainPairWithConfirmationView, authenticate_user_view
+from accounts.views import register_user_view, UserModelViewSet, authenticate_user_view
 from api.views import (
     CategoryViewSet,
     CommentViewSet,

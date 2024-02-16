@@ -1,6 +1,7 @@
-from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
+from django.http import Http404
+from rest_framework.validators import UniqueValidator
 from django.core.validators import RegexValidator
-from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth import get_user_model
 from django.db.models import Q
 from rest_framework.serializers import (
     ModelSerializer,
@@ -9,9 +10,7 @@ from rest_framework.serializers import (
     CharField,
     ValidationError,
 )
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.settings import api_settings
-from rest_framework import exceptions
+
 
 User = get_user_model()
 
@@ -33,39 +32,49 @@ class ExtendedUserModelSerializer(ModelSerializer):
             'bio',
             'role',
         )
-        # read_only_fields = ('role',)
 
     def validate_role(self, value):
         if value == 'owner':
-            raise ValidationError('blablalba')
+            raise ValidationError('Роль не может быть "owner"')
         return value
-    
+
     def update(self, instance, validated_data):
         validated_data.pop('role', None)
         return super().update(instance, validated_data)
 
-        # validators = [
-        #     UniqueValidator(
-        #         queryset=User.objects.all(),
-        #         fields=('email', ),
-        #         # message=(
-        #         #     'Ошибка: вы уже подписаны на пользователя'
-        #         #     'доступного по ключу "following".'
-        #         #     'Нельзя подписываться дважды.'
-        #         # )
-        #     ),
-        # ]
 
+# class UserGetTokenModelSerializer(Serializer):
+#     confirmation_code = CharField(
+#         max_length=254,
+#         required=True
+#     )
+#     username = CharField(
+#         max_length=150,
+#         required=True,
+#         validators=[
+#             RegexValidator(
+#                 regex=r'^[\w.@+-]+$',
+#                 message='Неправильный формат поля username',
+#             ),
+#         ],
+#     )
 
+#     def validate(self, data):
+#         username = data['username']
+#         confirmation_code = data['confirmation_code']
+#         if not User.objects.filter(username=username).exists:
+#             raise Http404('asdas')
+#         if User.objects.filter(Q(username=username) & ~Q(confirmation_code=confirmation_code)).exists:
+#             raise ValidationError('asdas')
+#         return data
+
+#     def validate_username(self, value):
+#         if not User.objects.filter(username=value).exists:
+#             raise Http404('asdas')
+#         return value
+
+# ! --------------- сериалайзер, проходят тесты --------------------
 class UserGetTokenModelSerializer(ModelSerializer):
-
-    # username = CharField(
-    #     max_length=150,
-    #     required=True)
-    # confirmation_code = CharField(
-    #     max_length=254,
-    #     required=True)
-
     class Meta:
         model = User
         fields = (
@@ -107,16 +116,3 @@ class UserModelSerializer(Serializer):
                 'Пользователь с таким username уже зарегистрирован'
             )
         return data
-
-    # def save(self, **kwargs):
-    #     return super().save(**kwargs)
-
-    # def is_valid(self, raise_exception=False):
-    #     # result = super().is_valid(raise_exception)
-    #     # email = self.initial_data['email']
-    #     # username = self.initial_data['username']
-    #     # if User.objects.filter(Q(email=email)
-    #     #                 & Q(username=username)).exists():
-    #     #     return True
-    #     # return result
-    #     return super().is_valid(raise_exception)

@@ -97,6 +97,8 @@ AUTH_USER_MODEL = 'accounts.User'
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 
+EMAIL_HOST_USER = 'yamdb@yandex.ru'
+
 EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
 
 REST_FRAMEWORK = {
