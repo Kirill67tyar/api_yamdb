@@ -43,44 +43,61 @@ class ExtendedUserModelSerializer(ModelSerializer):
         return super().update(instance, validated_data)
 
 
-# class UserGetTokenModelSerializer(Serializer):
-#     confirmation_code = CharField(
-#         max_length=254,
-#         required=True
-#     )
-#     username = CharField(
-#         max_length=150,
-#         required=True,
-#         validators=[
-#             RegexValidator(
-#                 regex=r'^[\w.@+-]+$',
-#                 message='Неправильный формат поля username',
-#             ),
-#         ],
-#     )
+# ? ------------------------------ Не модельный сериалайзер для получения токена --------------
 
-#     def validate(self, data):
-#         username = data['username']
-#         confirmation_code = data['confirmation_code']
-#         if not User.objects.filter(username=username).exists:
-#             raise Http404('asdas')
-#         if User.objects.filter(Q(username=username) & ~Q(confirmation_code=confirmation_code)).exists:
-#             raise ValidationError('asdas')
-#         return data
+class UserGetTokenModelSerializer(Serializer):
+    confirmation_code = CharField(
+        max_length=254,
+        required=True
+    )
+    username = CharField(
+        max_length=150,
+        required=True,
+        validators=[
+            RegexValidator(
+                regex=r'^[\w.@+-]+$',
+                message='Неправильный формат поля username',
+            ),
+        ],
+    )
 
-#     def validate_username(self, value):
-#         if not User.objects.filter(username=value).exists:
-#             raise Http404('asdas')
-#         return value
+    def validate(self, data):
+        username = data['username']
+        confirmation_code = data['confirmation_code']
+        if not User.objects.filter(username=username).exists():
+            raise Http404('asdas')
+        if User.objects.filter(Q(username=username) & ~Q(confirmation_code=confirmation_code)).exists():
+            raise ValidationError('asdas')
+        return data
+
+    # def validate_username(self, value):
+    #     if not User.objects.filter(username=value).exists:
+    #         raise Http404('asdas')
+    #     return value
 
 # ! --------------- сериалайзер, проходят тесты --------------------
-class UserGetTokenModelSerializer(ModelSerializer):
-    class Meta:
-        model = User
-        fields = (
-            'username',
-            'confirmation_code',
-        )
+# class UserGetTokenModelSerializer(ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = (
+#             'username',
+#             'confirmation_code',
+#         )
+
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer 
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims
+        token['confirmation_code'] = user.confirmation_code
+        del token['password']
+
+        return token
+
 
 
 class UserModelSerializer(Serializer):
