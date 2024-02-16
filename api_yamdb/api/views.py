@@ -1,10 +1,11 @@
-from django_filters.rest_framework import DjangoFilterBackend
-from django.shortcuts import get_object_or_404
 from django.db.models import Avg
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter
 from rest_framework import viewsets
+from rest_framework.filters import SearchFilter
 
+from api.filters import TitleFilter
+from api.mixins import CategoryGenreMixin, ReviewCommentMixin
 from api.permissions import IsAdminOrReadOnly
 from api.serializers import (
     CategorySerializer,
@@ -14,10 +15,8 @@ from api.serializers import (
     TitleReadSerializer,
     TitleWriteSerializer,
 )
-from api.filters import TitleFilter
 from api.viewsets import ListCreateDestroyModelViewSet
-from api.mixins import ReviewCommentMixin, CategoryGenreMixin
-from reviews.models import Review, Title, Genre, Category
+from reviews.models import Category, Genre, Review, Title
 
 
 class CategoryViewSet(CategoryGenreMixin, ListCreateDestroyModelViewSet):
@@ -31,16 +30,25 @@ class GenreViewSet(CategoryGenreMixin, ListCreateDestroyModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    filter_backends = (SearchFilter, DjangoFilterBackend,)
-    permission_classes = (IsAdminOrReadOnly, )
-    search_fields = ('name', )
-    queryset = Title.objects.order_by(
-        "pk").annotate(rating=Avg('reviews__score'))
+    filter_backends = (
+        SearchFilter,
+        DjangoFilterBackend,
+    )
+    permission_classes = (IsAdminOrReadOnly,)
+    search_fields = ("name",)
+    queryset = (
+        Title.objects.order_by("pk").annotate(rating=Avg("reviews__score"))
+    )
     filterset_class = TitleFilter
-    http_method_names = ['get', 'post', 'patch', 'delete',]
+    http_method_names = [
+        "get",
+        "post",
+        "patch",
+        "delete",
+    ]
 
     def get_serializer_class(self):
-        if self.action in ('list', 'retrieve'):
+        if self.action in ("list", "retrieve"):
             return TitleReadSerializer
         return TitleWriteSerializer
 

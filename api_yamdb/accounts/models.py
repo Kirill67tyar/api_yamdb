@@ -1,7 +1,7 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.utils.http import urlsafe_base64_encode
+from django.db import models
 from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 
 class User(AbstractUser):

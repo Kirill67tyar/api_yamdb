@@ -11,6 +11,12 @@ class IsAdminOrOwner(IsAuthenticated):
         if super().has_permission(request, view):
             return bool(
                 request.user.is_superuser
-                or (request.user.role in ('admin', 'owner',))
+                or (
+                    request.user.role
+                    in (
+                        "admin",
+                        "owner",
+                    )
+                )
             )
         return False
