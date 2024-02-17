@@ -2,13 +2,19 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from reviews.validators import validate_year
+from api_yamdb.settings import (
+    MAX_LENGHT, MAX_SLICE, MAX_VALIDATOR_VALUE, MIN_VALIDATOR_VALUE
+)
+
+
+VALUE_CANNOT_BE_LESS_THAN_1 = "Значение не может быть меньше 1"
+VALUE_CANNOT_BE_MORE_THAN_10 = "Значение не может быть больше 10"
 
 User = get_user_model()
 
 
 class Genre(models.Model):
-    name = models.CharField("Имя жанра", max_length=256)
+    name = models.CharField("Имя жанра", max_length=MAX_LENGHT)
     slug = models.SlugField("Тег жанра", unique=True)
 
     class Meta:
@@ -21,7 +27,7 @@ class Genre(models.Model):
 
 
 class Category(models.Model):
-    name = models.CharField("Имя категории", max_length=256)
+    name = models.CharField("Имя категории", max_length=MAX_LENGHT)
     slug = models.SlugField("Тег категории", unique=True)
 
     class Meta:
@@ -34,19 +40,22 @@ class Category(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField("Название произведения", max_length=256)
-    year = models.IntegerField("Год выпуска", validators=(validate_year,))
-    description = models.TextField("Описание", null=True, blank=True)
+    name = models.CharField("Название произведения", max_length=MAX_LENGHT)
+    year = models.PositiveSmallIntegerField("Год выпуска")
+    description = models.TextField(
+        "Описание", max_length=MAX_LENGHT, blank=True
+    )
     genre = models.ManyToManyField(Genre, verbose_name="Жанр")
     category = models.ForeignKey(
         Category,
-        verbose_name="Категория",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
+        verbose_name="Категория",
     )
 
     class Meta:
+        ordering = ("id",)
         verbose_name = "Произведение"
         verbose_name_plural = "Произведения"
         default_related_name = "titles"
@@ -66,14 +75,19 @@ class ReviewCommentAbstractModel(models.Model):
 
 
 class Review(ReviewCommentAbstractModel):
-    text = models.TextField(
-        "Текст",
-    )
+    text = models.TextField("Текст")
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, verbose_name="Название"
     )
     score = models.IntegerField(
-        "Рейтинг", validators=[MinValueValidator(1), MaxValueValidator(10)]
+        "Рейтинг",
+        validators=[
+            MinValueValidator(
+                MIN_VALIDATOR_VALUE, message=VALUE_CANNOT_BE_LESS_THAN_1
+            ),
+            MaxValueValidator(
+                MAX_VALIDATOR_VALUE, message=VALUE_CANNOT_BE_MORE_THAN_10),
+        ],
     )
 
     class Meta:
@@ -88,7 +102,7 @@ class Review(ReviewCommentAbstractModel):
         ]
 
     def __str__(self):
-        return self.text
+        return self.text[:MAX_SLICE]
 
 
 class Comment(ReviewCommentAbstractModel):
@@ -106,3 +120,6 @@ class Comment(ReviewCommentAbstractModel):
         verbose_name = "Комментарий"
         verbose_name_plural = "Комментарии"
         default_related_name = "comments"
+
+    def __str__(self):
+        return self.text[:MAX_SLICE]

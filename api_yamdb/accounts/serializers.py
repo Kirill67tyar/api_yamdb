@@ -22,6 +22,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 User = get_user_model()
 
 CONFIRMATION_CODE_IS_NOT_VALID = "Код подтверждения не валиден"
+EMAIL_IS_NOT_UNIQUE = "Email не уникален"
 INVALID_USERNAME_FIELD_FORMAT = "Неправильный формат поля username"
 NO_USER_WITH_THIS_USERNAME = "Нет пользователя с таким username"
 ROLE_CANNOT_BE_OWNER = "Роль не может быть 'owner'"
@@ -38,7 +39,10 @@ class ExtendedUserModelSerializer(ModelSerializer):
     email = EmailField(
         max_length=254,
         required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())],
+        validators=[UniqueValidator(
+            queryset=User.objects.all(), message=EMAIL_IS_NOT_UNIQUE
+            )
+        ],
     )
 
     class Meta:
