@@ -44,17 +44,13 @@ class User(AbstractUser):
         default=settings.USER_ROLE,
         verbose_name='Выбор роли пользователя'
     )
-    confirmation_code = models.CharField(
-        max_length=255,
-        verbose_name='Код подтверждения'
-    )
+    # confirmation_code = models.CharField(
+    #     max_length=255,
+    #     verbose_name='Код подтверждения'
+    # )
 
     def save(self, *args, **kwargs) -> None:
-        self.confirmation_code = urlsafe_base64_encode(
-            force_bytes(self.username)
-        )
-        # token = default_token_generator.make_token(self)
-        # default_token_generator.make_token(self)
+        default_token_generator.make_token(self)
         return super().save(*args, **kwargs)
 
     def is_user(self):

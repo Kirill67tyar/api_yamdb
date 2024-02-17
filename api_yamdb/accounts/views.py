@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Q
 from rest_framework import status
 from rest_framework.decorators import action, api_view
 from rest_framework.filters import SearchFilter
@@ -9,8 +8,9 @@ from rest_framework.viewsets import ModelViewSet
 
 from accounts.permissions import IsAdminOrOwner
 from accounts.serializers import (ExtendedUserModelSerializer,
-                                  UserSerializer)
-from accounts.utils import send_email_confirmation_code
+                                  UserSerializer, UserGetTokenSerializer)
+from accounts.utils import send_email_confirmation_code, get_object_or_null
+
 
 User = get_user_model()
 
@@ -49,7 +49,8 @@ class UserModelViewSet(ModelViewSet):
                 partial=True,
             )
             serializer.is_valid(raise_exception=True)
-            user = serializer.save()
+            serializer.validated_data.pop("role", None)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -57,18 +58,19 @@ class UserModelViewSet(ModelViewSet):
 @api_view(http_method_names=["POST"])
 def register_user_view(request):
     serializer = UserSerializer(data=request.data)
-    if serializer.is_valid(raise_exception=False):
-        username = serializer.validated_data["username"]
-        email = serializer.validated_data["email"]
-        if User.objects.filter(Q(email=email) & Q(username=username)).exists():
-            return Response(data=serializer.data, status=status.HTTP_200_OK)
-        user = User.objects.create(
-            username=username,
-            email=email,
-        )
-        send_email_confirmation_code(
-            confirmation_code=user.confirmation_code,
-            email=user.email,
-        )
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
-    return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.create()
+    return Response(data=data, status=status.HTTP_200_OK)
+
+
+from django.contrib.auth.tokens import default_token_generator
+from rest_framework_simplejwt.tokens import RefreshToken
+
+@api_view(http_method_names=["POST"])
+def get_token_view(request):
+    serializer = UserGetTokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = serializer.get_user()
+    refresh = RefreshToken.for_user(user)
+    data = {'token': str(refresh.access_token)}
+    return Response(data=data, status=status.HTTP_200_OK)

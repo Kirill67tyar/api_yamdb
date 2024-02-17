@@ -4,6 +4,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from accounts.views import (
     register_user_view,
+    get_token_view,
     UserModelViewSet,
 )
 from api.views import (
@@ -36,7 +37,8 @@ urlpatterns = [
     path("v1/auth/signup/", register_user_view, name="signup"),
     path(
         'v1/auth/token/',
-        TokenObtainPairView.as_view(),
+        # TokenObtainPairView.as_view(),
+        get_token_view,
         name='token_obtain_pair'
     )
 ]

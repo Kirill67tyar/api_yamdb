@@ -112,7 +112,7 @@ REST_FRAMEWORK = {
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'TOKEN_OBTAIN_SERIALIZER': 'accounts.serializers.MyTokenObtainSerializer',
+    # 'TOKEN_OBTAIN_SERIALIZER': 'accounts.serializers.MyTokenObtainSerializer',
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=500),
 }
 
