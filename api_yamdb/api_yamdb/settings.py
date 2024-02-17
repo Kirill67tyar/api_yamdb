@@ -113,6 +113,10 @@ SIMPLE_JWT = {
     'TOKEN_OBTAIN_SERIALIZER': 'accounts.serializers.MyTokenObtainSerializer',
 }
 
+
+USER_ROLE = 'user'
+MODERATOR_ROLE = 'moderator'
+ADMIN_ROLE = 'admin'
 MAX_LENGHT = 256
 MAX_SLICE = 30
 MIN_VALIDATOR_VALUE = 1

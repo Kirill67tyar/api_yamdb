@@ -9,7 +9,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from accounts.permissions import IsAdminOrOwner
 from accounts.serializers import (ExtendedUserModelSerializer,
-                                  UserModelSerializer)
+                                  UserSerializer)
 from accounts.utils import send_email_confirmation_code
 
 User = get_user_model()
@@ -48,15 +48,15 @@ class UserModelViewSet(ModelViewSet):
                 data=request.data,
                 partial=True,
             )
-            if serializer.is_valid(raise_exception=True):
-                user = serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer.is_valid(raise_exception=True)
+            user = serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(http_method_names=["POST"])
 def register_user_view(request):
-    serializer = UserModelSerializer(data=request.data)
+    serializer = UserSerializer(data=request.data)
     if serializer.is_valid(raise_exception=False):
         username = serializer.validated_data["username"]
         email = serializer.validated_data["email"]
