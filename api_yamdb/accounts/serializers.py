@@ -18,6 +18,11 @@ from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
+from django.contrib.auth.validators import UnicodeUsernameValidator
+
+from accounts.validators import validate_username, MyUnicodeUsernameValidator
+
 
 User = get_user_model()
 
@@ -32,6 +37,7 @@ THERE_IS_USER_WITH_THIS_USERNAME = (
     "Пользователь с таким username уже зарегистрирован"
 )
 USERNAME_SHOULD_NOT_HAVE_VALUE_ME = "Username не должен иметь значение 'me'"
+MAX_LENGTH_EMAIL = 254
 
 
 class ExtendedUserModelSerializer(ModelSerializer):
@@ -52,67 +58,20 @@ class ExtendedUserModelSerializer(ModelSerializer):
             "role",
         )
 
-    def validate_role(self, value):
-        if value == "owner":
-            raise ValidationError(ROLE_CANNOT_BE_OWNER)
-        return value
-
     def update(self, instance, validated_data):
         validated_data.pop("role", None)
         return super().update(instance, validated_data)
 
-
-class UserGetTokenModelSerializer(Serializer):
-    confirmation_code = CharField(max_length=254, required=True)
+class UserSerializer(Serializer):
+    email = EmailField(max_length=MAX_LENGTH_EMAIL, required=True)
     username = CharField(
         max_length=150,
         required=True,
         validators=[
-            RegexValidator(
-                regex=r"^[\w.@+-]+$",
-                message=INVALID_USERNAME_FIELD_FORMAT,
-            ),
+            UnicodeUsernameValidator(message='"username" должен быть уникальным'),
+            validate_username
         ],
     )
-
-    def validate(self, data):
-        username = data["username"]
-        confirmation_code = data["confirmation_code"]
-        if not User.objects.filter(username=username).exists():
-            raise Http404(NO_USER_WITH_THIS_USERNAME)
-        if User.objects.filter(
-            Q(username=username) & ~Q(confirmation_code=confirmation_code)
-        ).exists():
-            raise ValidationError(CONFIRMATION_CODE_IS_NOT_VALID)
-        return data
-
-
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        token["confirmation_code"] = user.confirmation_code
-        del token["password"]
-        return token
-
-
-class UserModelSerializer(Serializer):
-    email = EmailField(max_length=254, required=True)
-    username = CharField(
-        max_length=150,
-        required=True,
-        validators=[
-            RegexValidator(
-                regex=r"^[\w.@+-]+$",
-                message=INVALID_USERNAME_FIELD_FORMAT,
-            ),
-        ],
-    )
-
-    def validate_username(self, value):
-        if value == "me":
-            raise ValidationError(USERNAME_SHOULD_NOT_HAVE_VALUE_ME)
-        return value
 
     def validate(self, data):
         username = data["username"]

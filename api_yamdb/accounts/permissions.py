@@ -6,17 +6,7 @@ class IsAdminOrOwner(IsAuthenticated):
     def has_permission(self, request, view):
         """
         Доступ разрушён если клиент аутентифицирован.
-        Является суперюзером, или его роль admin или owner.
+        Является суперюзером, или его роль admin.
         """
-        if super().has_permission(request, view):
-            return bool(
-                request.user.is_superuser
-                or (
-                    request.user.role
-                    in (
-                        "admin",
-                        "owner",
-                    )
-                )
-            )
-        return False
+        return bool(request.user and request.user.is_authenticated
+                    and (request.user.is_superuser or request.user.role == "admin"))
