@@ -17,12 +17,6 @@ from users.validators import validate_username
 
 User = get_user_model()
 
-# ! -=-=-=- неиспользуемые константы -=-=-=-
-NO_USER_WITH_THIS_USERNAME = "Нет пользователя с таким username"
-ROLE_CANNOT_BE_OWNER = "Роль не может быть 'owner'"
-USERNAME_SHOULD_NOT_HAVE_VALUE_ME = "Username не должен иметь значение 'me'"
-# ! -=-=-=- неиспользуемые константы -=-=-=-
-
 
 class CategorySerializer(serializers.ModelSerializer):
 
@@ -43,7 +37,7 @@ class GenreSerializer(serializers.ModelSerializer):
 class TitleReadSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.IntegerField(read_only=True)
+    rating = serializers.IntegerField(read_only=True, default=None)
 
     class Meta:
         model = Title
@@ -126,7 +120,6 @@ class ExtendedUserModelSerializer(ModelSerializer):
             "bio",
             "role",
         )
-    
 
 
 class UserSerializer(Serializer):
@@ -182,7 +175,9 @@ class UserSerializer(Serializer):
 
 
 class UserGetTokenSerializer(Serializer):
-    confirmation_code = CharField(max_length=settings.MAX_LENGTH_EMAIL, required=True)
+    confirmation_code = CharField(
+        max_length=settings.MAX_LENGTH_EMAIL, required=True
+    )
     username = CharField(
         max_length=150,
         required=True,
