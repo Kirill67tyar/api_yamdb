@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +21,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "api.apps.ApiConfig",
     "reviews.apps.ReviewsConfig",
-    "accounts.apps.AccountsConfig",
+    "users.apps.UsersConfig",
 ]
 
 MIDDLEWARE = [
@@ -93,7 +94,7 @@ STATIC_URL = "/static/"
 
 STATICFILES_DIRS = ((BASE_DIR / "static/"),)
 
-AUTH_USER_MODEL = "accounts.User"
+AUTH_USER_MODEL = "users.User"
 
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 
@@ -109,6 +110,20 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
 }
 
+
 SIMPLE_JWT = {
-    'TOKEN_OBTAIN_SERIALIZER': 'accounts.serializers.MyTokenObtainSerializer',
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=500),
 }
+
+USER_ROLE = 'user'
+MODERATOR_ROLE = 'moderator'
+ADMIN_ROLE = 'admin'
+
+USER_ROLE = 'user'
+MODERATOR_ROLE = 'moderator'
+ADMIN_ROLE = 'admin'
+MAX_LENGHT = 256
+MAX_SLICE = 30
+MIN_VALIDATOR_VALUE = 1
+MAX_VALIDATOR_VALUE = 10
+
