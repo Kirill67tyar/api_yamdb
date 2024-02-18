@@ -103,6 +103,9 @@ EMAIL_HOST_USER = "yamdb@yandex.ru"
 EMAIL_FILE_PATH = BASE_DIR / "sent_emails"
 
 REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
@@ -111,13 +114,10 @@ REST_FRAMEWORK = {
 }
 
 
-# SIMPLE_JWT = {
-#     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=500),
-# }
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=500),
+}
 
-USER_ROLE = 'user'
-MODERATOR_ROLE = 'moderator'
-ADMIN_ROLE = 'admin'
 
 USER_ROLE = 'user'
 MODERATOR_ROLE = 'moderator'

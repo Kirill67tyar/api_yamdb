@@ -24,6 +24,7 @@ class User(AbstractUser):
             'уникальность': settings.THERE_IS_USER_WITH_THIS_USERNAME,
         },
     )
+    email = models.EmailField('емэйл', blank=False, unique=True)
     bio = models.TextField(
         blank=True,
     )
@@ -33,10 +34,12 @@ class User(AbstractUser):
         default=settings.USER_ROLE,
         verbose_name='Выбор роли пользователя'
     )
-
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
     @property
     def is_moderator(self):
         return self.role == settings.MODERATOR_ROLE
+
 
     def is_admin(self):
         return self.role == settings.ADMIN_ROLE
@@ -44,6 +47,14 @@ class User(AbstractUser):
     @property
     def superuser(self):
         return self.role == settings.ADMIN_ROLE and self.is_superuser
+    
+    @property
+    def superuser(self):
+        return self.role == settings.ADMIN_ROLE or self.is_superuser
 
     class Meta:
         ordering = ('username', '-date_joined',)
+
+    def __str__(self):
+        return f'таааа-шааа - {self.email}'
+    

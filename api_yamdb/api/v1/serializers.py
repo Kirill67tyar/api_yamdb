@@ -27,7 +27,7 @@ USERNAME_SHOULD_NOT_HAVE_VALUE_ME = "Username не должен иметь зн�
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
-        exclude = ("id",)
+        fields = ("name", "slug",)
         model = Category
         lookup_field = "slug"
 
@@ -35,15 +35,24 @@ class CategorySerializer(serializers.ModelSerializer):
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
-        exclude = ("id",)
+        fields = ("name", "slug",)
         model = Genre
         lookup_field = "slug"
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
+    # category = CategorySerializer(read_only=True)
+    category = serializers.SerializerMethodField(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.IntegerField(read_only=True)
+    rating = serializers.IntegerField(read_only=True, default=None)
+
+    def get_category(self, obj):
+        if obj.category:
+            return {
+                "name": obj.category.name,
+                "slug": obj.category.slug
+            }
+        return {}
 
     class Meta:
         model = Title
@@ -76,6 +85,9 @@ class TitleWriteSerializer(serializers.ModelSerializer):
             "genre",
             "category",
         )
+    # def to_representation(self, instance):
+    #     data = super().to_representation(instance)
+    #     return TitleReadSerializer(instance).to_representation(data)
 
     def to_representation(self, title):
         return TitleReadSerializer(title).data
@@ -105,17 +117,8 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         exclude = ("review",)
 
-from rest_framework.response import Response
-from rest_framework import status
+
 class ExtendedUserModelSerializer(ModelSerializer):
-    email = EmailField(
-        max_length=254,
-        required=True,
-        validators=[UniqueValidator(
-            queryset=User.objects.all(), message=settings.EMAIL_IS_NOT_UNIQUE
-        )
-        ],
-    )
 
     class Meta:
         model = User
@@ -127,17 +130,6 @@ class ExtendedUserModelSerializer(ModelSerializer):
             "bio",
             "role",
         )
-    # def validate_email(self, value):
-    #     if not value:
-    #         return Response(status=status.HTTP_400_BAD_REQUEST)
-    #         # raise ValidationError(settings.EMAIL_REQUIRED)
-    #     return value    
-
-    # def validate(self, data):
-    #     email = data.get("email")
-    #     if not email:
-    #         raise ValidationError(settings.EMAIL_REQUIRED)
-    #     return data
 
 
 class UserSerializer(Serializer):
@@ -157,20 +149,22 @@ class UserSerializer(Serializer):
         if User.objects.filter(
             Q(email=email) & ~Q(username=username)
         ).exists():
-            raise ValidationError(settings.THERE_IS_USER_WITH_THIS_EMAIL)
+            raise ValidationError(
+                {'email': settings.THERE_IS_USER_WITH_THIS_EMAIL})
         if User.objects.filter(
             ~Q(email=email) & Q(username=username)
         ).exists():
-            raise ValidationError(settings.THERE_IS_USER_WITH_THIS_USERNAME)
+            raise ValidationError(
+                {'username': settings.THERE_IS_USER_WITH_THIS_USERNAME})
         return data
 
     def create(self):
         username = self.validated_data["username"]
         email = self.validated_data["email"]
         user, created = User.objects.get_or_create(
-                username=username,
-                email=email
-            )
+            username=username,
+            email=email
+        )
         confirmation_code = default_token_generator.make_token(user)
         send_email_confirmation_code(
             confirmation_code=confirmation_code,
@@ -180,7 +174,8 @@ class UserSerializer(Serializer):
 
 
 class UserGetTokenSerializer(Serializer):
-    confirmation_code = CharField(max_length=settings.MAX_LENGTH_EMAIL, required=True)
+    confirmation_code = CharField(
+        max_length=settings.MAX_LENGTH_EMAIL, required=True)
     username = CharField(
         max_length=settings.MAX_LENGTH_USERNAME,
         required=True,
