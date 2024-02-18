@@ -35,7 +35,8 @@ class IsAdminOrModeratorOrReadOnly(IsAuthenticatedOrReadOnly):
             or (request.user.is_authenticated
             and obj.author == request.user)
             or request.user.is_admin()
-            or request.user.is_moderator()
+            # or request.user.superuser
+            or request.user.is_moderator
         )
 
 

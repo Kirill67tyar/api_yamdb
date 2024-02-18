@@ -105,7 +105,8 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         exclude = ("review",)
 
-
+from rest_framework.response import Response
+from rest_framework import status
 class ExtendedUserModelSerializer(ModelSerializer):
     email = EmailField(
         max_length=254,
@@ -126,17 +127,26 @@ class ExtendedUserModelSerializer(ModelSerializer):
             "bio",
             "role",
         )
-    
+    # def validate_email(self, value):
+    #     if not value:
+    #         return Response(status=status.HTTP_400_BAD_REQUEST)
+    #         # raise ValidationError(settings.EMAIL_REQUIRED)
+    #     return value    
+
+    # def validate(self, data):
+    #     email = data.get("email")
+    #     if not email:
+    #         raise ValidationError(settings.EMAIL_REQUIRED)
+    #     return data
 
 
 class UserSerializer(Serializer):
     email = EmailField(max_length=settings.MAX_LENGTH_EMAIL, required=True)
     username = CharField(
-        max_length=150,
+        max_length=settings.MAX_LENGTH_USERNAME,
         required=True,
         validators=[
-            UnicodeUsernameValidator(
-                message=settings.INVALID_USERNAME_FIELD_FORMAT),
+            UnicodeUsernameValidator(),
             validate_username
         ],
     )
@@ -157,22 +167,10 @@ class UserSerializer(Serializer):
     def create(self):
         username = self.validated_data["username"]
         email = self.validated_data["email"]
-        user = get_object_or_null(
-            User,
-            username=username,
-            email=email
-        )
-        if user:
-            confirmation_code = default_token_generator.make_token(user)
-            send_email_confirmation_code(
-                confirmation_code=confirmation_code,
-                email=user.email,
+        user, created = User.objects.get_or_create(
+                username=username,
+                email=email
             )
-            return self.validated_data
-        user = User.objects.create(
-            username=username,
-            email=email,
-        )
         confirmation_code = default_token_generator.make_token(user)
         send_email_confirmation_code(
             confirmation_code=confirmation_code,
@@ -184,11 +182,10 @@ class UserSerializer(Serializer):
 class UserGetTokenSerializer(Serializer):
     confirmation_code = CharField(max_length=settings.MAX_LENGTH_EMAIL, required=True)
     username = CharField(
-        max_length=150,
+        max_length=settings.MAX_LENGTH_USERNAME,
         required=True,
         validators=[
-            UnicodeUsernameValidator(
-                message=settings.USERNAME_IS_NOT_UNIQUE),
+            UnicodeUsernameValidator(),
             validate_username
         ],
     )
@@ -201,8 +198,7 @@ class UserGetTokenSerializer(Serializer):
         return data
 
     def get_user(self):
-        username = self.validated_data['username']
         return get_object_or_404(
             User,
-            username=username,
+            username=self.validated_data['username'],
         )

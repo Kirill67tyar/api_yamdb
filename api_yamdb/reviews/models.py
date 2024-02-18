@@ -53,7 +53,7 @@ class Title(models.Model):
     )
 
     class Meta:
-        ordering = ("id",)
+        ordering = ("-year",)
         verbose_name = "Произведение"
         verbose_name_plural = "Произведения"
         default_related_name = "titles"

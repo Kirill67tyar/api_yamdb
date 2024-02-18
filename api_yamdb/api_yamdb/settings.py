@@ -111,9 +111,9 @@ REST_FRAMEWORK = {
 }
 
 
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=500),
-}
+# SIMPLE_JWT = {
+#     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=500),
+# }
 
 USER_ROLE = 'user'
 MODERATOR_ROLE = 'moderator'
@@ -138,7 +138,11 @@ THERE_IS_USER_WITH_THIS_EMAIL = (
 THERE_IS_USER_WITH_THIS_USERNAME = (
     "Пользователь с таким username уже зарегистрирован"
 )
+MAX_LENGTH_ROLE = 25
 MAX_LENGTH_EMAIL = 254
+MAX_LENGTH_USERNAME = 150
+EMAIL_REQUIRED = 'email является обязательным полем'
+
 
 ERROR_BAD_REQUEST = "Вы уже отправляли отзыв на это произведение"
 
