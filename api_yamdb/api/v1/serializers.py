@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db.models import Q
+from django.conf import settings
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 from rest_framework.relations import SlugRelatedField
@@ -13,24 +14,14 @@ from api.v1.utils import get_object_or_null, send_email_confirmation_code
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.validators import validate_username
 
+
 User = get_user_model()
 
-CONFIRMATION_CODE_IS_NOT_VALID = "Код подтверждения не валиден"
-EMAIL_IS_NOT_UNIQUE = "Email не уникален"
-INVALID_USERNAME_FIELD_FORMAT = "Неправильный формат поля username"
+# ! -=-=-=- неиспользуемые константы -=-=-=-
 NO_USER_WITH_THIS_USERNAME = "Нет пользователя с таким username"
 ROLE_CANNOT_BE_OWNER = "Роль не может быть 'owner'"
-THERE_IS_USER_WITH_THIS_EMAIL = (
-    "Пользователь с таким email уже зарегистрирован"
-)
-THERE_IS_USER_WITH_THIS_USERNAME = (
-    "Пользователь с таким username уже зарегистрирован"
-)
 USERNAME_SHOULD_NOT_HAVE_VALUE_ME = "Username не должен иметь значение 'me'"
-MAX_LENGTH_EMAIL = 254
-
-
-ERROR_BAD_REQUEST = "Вы уже отправляли отзыв на это произведение"
+# ! -=-=-=- неиспользуемые константы -=-=-=-
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -87,8 +78,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         )
 
     def to_representation(self, title):
-        serializer = TitleReadSerializer(title)
-        return serializer.data
+        return TitleReadSerializer(title).data
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -103,11 +93,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         title_id = self.context["view"].kwargs.get("title_id")
         if self.context["request"].method == 'POST':
-            if (
-                user.reviews.filter(title=title_id).exists()
-                and self.context["request"].method != "PATCH"
-            ):
-                raise serializers.ValidationError(ERROR_BAD_REQUEST)
+            if user.reviews.filter(title=title_id).exists():
+                raise serializers.ValidationError(settings.ERROR_BAD_REQUEST)
         return data
 
 
@@ -124,7 +111,7 @@ class ExtendedUserModelSerializer(ModelSerializer):
         max_length=254,
         required=True,
         validators=[UniqueValidator(
-            queryset=User.objects.all(), message=EMAIL_IS_NOT_UNIQUE
+            queryset=User.objects.all(), message=settings.EMAIL_IS_NOT_UNIQUE
         )
         ],
     )
@@ -139,16 +126,17 @@ class ExtendedUserModelSerializer(ModelSerializer):
             "bio",
             "role",
         )
+    
 
 
 class UserSerializer(Serializer):
-    email = EmailField(max_length=MAX_LENGTH_EMAIL, required=True)
+    email = EmailField(max_length=settings.MAX_LENGTH_EMAIL, required=True)
     username = CharField(
         max_length=150,
         required=True,
         validators=[
             UnicodeUsernameValidator(
-                message='"username" должен быть уникальным'),
+                message=settings.INVALID_USERNAME_FIELD_FORMAT),
             validate_username
         ],
     )
@@ -159,11 +147,11 @@ class UserSerializer(Serializer):
         if User.objects.filter(
             Q(email=email) & ~Q(username=username)
         ).exists():
-            raise ValidationError(THERE_IS_USER_WITH_THIS_EMAIL)
+            raise ValidationError(settings.THERE_IS_USER_WITH_THIS_EMAIL)
         if User.objects.filter(
             ~Q(email=email) & Q(username=username)
         ).exists():
-            raise ValidationError(THERE_IS_USER_WITH_THIS_USERNAME)
+            raise ValidationError(settings.THERE_IS_USER_WITH_THIS_USERNAME)
         return data
 
     def create(self):
@@ -194,13 +182,13 @@ class UserSerializer(Serializer):
 
 
 class UserGetTokenSerializer(Serializer):
-    confirmation_code = CharField(max_length=MAX_LENGTH_EMAIL, required=True)
+    confirmation_code = CharField(max_length=settings.MAX_LENGTH_EMAIL, required=True)
     username = CharField(
         max_length=150,
         required=True,
         validators=[
             UnicodeUsernameValidator(
-                message='"username" должен быть уникальным'),
+                message=settings.USERNAME_IS_NOT_UNIQUE),
             validate_username
         ],
     )
@@ -209,7 +197,7 @@ class UserGetTokenSerializer(Serializer):
         user = get_object_or_404(User, username=data['username'])
         if not default_token_generator.check_token(
                 user, data['confirmation_code']):
-            raise ValidationError(CONFIRMATION_CODE_IS_NOT_VALID)
+            raise ValidationError(settings.CONFIRMATION_CODE_IS_NOT_VALID)
         return data
 
     def get_user(self):
