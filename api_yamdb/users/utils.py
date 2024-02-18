@@ -1,7 +1,7 @@
-from django.db.models.query import QuerySet
-from django.db.models.manager import BaseManager
 from django.conf import settings
 from django.core.mail import send_mail
+from django.db.models.manager import BaseManager
+from django.db.models.query import QuerySet
 
 
 def send_email_confirmation_code(confirmation_code, email):

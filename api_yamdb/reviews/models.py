@@ -2,10 +2,8 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from api_yamdb.settings import (
-    MAX_LENGHT, MAX_SLICE, MAX_VALIDATOR_VALUE, MIN_VALIDATOR_VALUE
-)
-
+from api_yamdb.settings import (MAX_LENGHT, MAX_SLICE, MAX_VALIDATOR_VALUE,
+                                MIN_VALIDATOR_VALUE)
 
 VALUE_CANNOT_BE_LESS_THAN_1 = "Значение не может быть меньше 1"
 VALUE_CANNOT_BE_MORE_THAN_10 = "Значение не может быть больше 10"
