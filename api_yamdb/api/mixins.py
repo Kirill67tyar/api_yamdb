@@ -1,9 +1,7 @@
 from rest_framework.filters import SearchFilter
 
-from api.permissions import (
-    IsAdminOrOwnerOrModeratorOrReadOnly,
-    IsAdminOrReadOnly
-)
+from api.permissions import (IsAdminOrOwnerOrModeratorOrReadOnly,
+                             IsAdminOrReadOnly)
 
 
 class ReviewCommentMixin:

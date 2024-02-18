@@ -7,14 +7,9 @@ from rest_framework.filters import SearchFilter
 from api.filters import TitleFilter
 from api.mixins import CategoryGenreMixin, ReviewCommentMixin
 from api.permissions import IsAdminOrReadOnly
-from api.serializers import (
-    CategorySerializer,
-    CommentSerializer,
-    GenreSerializer,
-    ReviewSerializer,
-    TitleReadSerializer,
-    TitleWriteSerializer,
-)
+from api.serializers import (CategorySerializer, CommentSerializer,
+                             GenreSerializer, ReviewSerializer,
+                             TitleReadSerializer, TitleWriteSerializer)
 from api.viewsets import ListCreateDestroyModelViewSet
 from reviews.models import Category, Genre, Review, Title
 
