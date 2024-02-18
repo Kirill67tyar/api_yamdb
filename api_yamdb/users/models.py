@@ -21,7 +21,7 @@ class User(AbstractUser):
         unique=True,
         help_text=_(
             'Обязательное. Символов <= 150'),
-        validators=[username_validator, validate_username,],
+        validators=[username_validator, validate_username, ],
         error_messages={
             'unique': _("A user with that username already exists."),
         },
