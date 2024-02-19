@@ -13,11 +13,17 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from api.v1.filters import TitleFilter
 from api.v1.mixins import CategoryGenreMixin, ReviewCommentMixin
 from api.v1.permissions import IsAdminOrOwner, IsAdminOrReadOnly
-from api.v1.serializers import (CategorySerializer, CommentSerializer,
-                                ExtendedUserModelSerializer, GenreSerializer,
-                                ReviewSerializer, TitleReadSerializer,
-                                TitleWriteSerializer, UserGetTokenSerializer,
-                                UserSerializer)
+from api.v1.serializers import (
+    CategorySerializer,
+    CommentSerializer,
+    ExtendedUserModelSerializer,
+    GenreSerializer,
+    ReviewSerializer,
+    TitleReadSerializer,
+    TitleWriteSerializer,
+    UserGetTokenSerializer,
+    UserSerializer,
+)
 from api.v1.viewsets import ListCreateDestroyModelViewSet
 from reviews.models import Category, Genre, Review, Title
 
@@ -35,8 +41,8 @@ class GenreViewSet(CategoryGenreMixin, ListCreateDestroyModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = (
-        Title.objects.order_by("pk").annotate(rating=Avg("reviews__score"))
+    queryset = Title.objects.order_by("pk").annotate(
+        rating=Avg("reviews__score")
     )
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (
@@ -51,6 +57,12 @@ class TitleViewSet(viewsets.ModelViewSet):
         "patch",
         "delete",
     ]
+    filterset_fields = (
+        "category",
+        "genre",
+        "name",
+        "year",
+    )
 
     def get_serializer_class(self):
         if self.action in ("list", "retrieve"):
@@ -78,7 +90,7 @@ class CommentViewSet(ReviewCommentMixin, viewsets.ModelViewSet):
         return get_object_or_404(
             Review,
             title_id=self.kwargs.get("title_id"),
-            pk=self.kwargs.get("review_id")
+            pk=self.kwargs.get("review_id"),
         )
 
     def get_queryset(self):
@@ -132,7 +144,7 @@ class UserModelViewSet(ModelViewSet):
 def register_user_view(request):
     serializer = UserSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    data = serializer.create()
+    data = serializer.save()
     return Response(data=data, status=status.HTTP_200_OK)
 
 
@@ -142,5 +154,5 @@ def get_token_view(request):
     serializer.is_valid(raise_exception=True)
     user = serializer.get_user()
     refresh = RefreshToken.for_user(user)
-    data = {'token': str(refresh.access_token)}
+    data = {"token": str(refresh.access_token)}
     return Response(data=data, status=status.HTTP_200_OK)
