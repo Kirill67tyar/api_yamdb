@@ -7,6 +7,9 @@ from users.validators import validate_username
 
 
 class User(AbstractUser):
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username"]
     ROLE_CHOICES = (
         (
             settings.USER_ROLE,
@@ -33,7 +36,7 @@ class User(AbstractUser):
             validate_username,
         ],
         error_messages={
-            "уникальность": settings.THERE_IS_USER_WITH_THIS_USERNAME,
+            "уникальность": settings.IS_USER_WITH_THIS_USERNAME,
         },
     )
     email = models.EmailField("емэйл", blank=False, unique=True)
@@ -46,8 +49,6 @@ class User(AbstractUser):
         default=settings.USER_ROLE,
         verbose_name="Выбор роли пользователя",
     )
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username"]
 
     @property
     def is_moderator(self):
@@ -64,4 +65,4 @@ class User(AbstractUser):
         )
 
     def __str__(self):
-        return f"таааа-шааа - {self.email}"
+        return f"username: {self.username}; email: {self.email}"

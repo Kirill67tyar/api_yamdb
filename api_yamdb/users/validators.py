@@ -7,4 +7,3 @@ def validate_username(value):
         raise ValidationError(
             {'username': settings.USERNAME_SHOULD_NOT_HAVE_VALUE_ME}
         )
-    return value

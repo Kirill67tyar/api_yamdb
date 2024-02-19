@@ -38,7 +38,7 @@ class Title(models.Model):
     name = models.CharField(
         "Название произведения", max_length=settings.MAX_LENGHT
     )
-    year = models.PositiveSmallIntegerField(
+    year = models.SmallIntegerField(
         "Год выпуска", validators=[validate_year, ]
     )
     description = models.TextField(
@@ -49,7 +49,7 @@ class Title(models.Model):
         Category,
         on_delete=models.SET_NULL,
         null=True,
-        blank=True,
+        blank=False,
         verbose_name="Категория",
     )
 

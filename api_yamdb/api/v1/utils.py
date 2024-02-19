@@ -1,7 +1,5 @@
 from django.conf import settings
 from django.core.mail import send_mail
-from django.db.models.manager import BaseManager
-from django.db.models.query import QuerySet
 
 
 def send_email_confirmation_code(confirmation_code, email):
@@ -14,10 +12,3 @@ def send_email_confirmation_code(confirmation_code, email):
         ],
         fail_silently=True,
     )
-
-
-def get_object_or_null(model, **kwargs):
-    """Получает объект модели или возвращает None"""
-    if isinstance(model, (QuerySet, BaseManager)):
-        return model.filter(**kwargs).first()
-    return model.objects.filter(**kwargs).first()

@@ -130,10 +130,10 @@ CONFIRMATION_CODE_IS_NOT_VALID = "Код подтверждения не вал�
 EMAIL_IS_NOT_UNIQUE = "Email не уникален"
 USERNAME_IS_NOT_UNIQUE = "Username не уникален"
 INVALID_USERNAME_FIELD_FORMAT = "Неправильный формат поля username"
-THERE_IS_USER_WITH_THIS_EMAIL = (
+IS_USER_WITH_THIS_EMAIL = (
     "Пользователь с таким email уже зарегистрирован"
 )
-THERE_IS_USER_WITH_THIS_USERNAME = (
+IS_USER_WITH_THIS_USERNAME = (
     "Пользователь с таким username уже зарегистрирован"
 )
 MAX_LENGTH_ROLE = 25

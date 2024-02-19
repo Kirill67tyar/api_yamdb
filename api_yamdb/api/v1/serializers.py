@@ -13,7 +13,7 @@ from rest_framework.serializers import (
     ValidationError,
 )
 
-from api.v1.utils import get_object_or_null, send_email_confirmation_code
+from api.v1.utils import send_email_confirmation_code
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.validators import validate_username
 
@@ -43,14 +43,9 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
-    category = serializers.SerializerMethodField(read_only=True)
+    category = CategorySerializer(read_only=True, many=False)
     genre = GenreSerializer(read_only=True, many=True)
     rating = serializers.IntegerField(read_only=True, default=None)
-
-    def get_category(self, obj):
-        if obj.category:
-            return {"name": obj.category.name, "slug": obj.category.slug}
-        return {"name": "string", "slug": "string"}
 
     class Meta:
         model = Title
@@ -85,11 +80,6 @@ class TitleWriteSerializer(serializers.ModelSerializer):
             "genre",
             "category",
         )
-
-    def validate_genre(self, value):
-        if not value:
-            raise ValidationError(settings.GENRE_SHOULD_NOT_BE_EMPTY)
-        return value
 
     def to_representation(self, title):
         return TitleReadSerializer(title).data
@@ -148,33 +138,21 @@ class UserSerializer(Serializer):
     def validate(self, data):
         username = data["username"]
         email = data["email"]
-        user = get_object_or_null(
-            User,
-            username=username,
-            email=email,
-        )
-        if not user:
-            user_on_username = get_object_or_null(User, username=username)
-            user_on_email = get_object_or_null(User, email=email)
-            if user_on_username and user_on_email:
-                raise ValidationError(
-                    {
-                        'username': settings.THERE_IS_USER_WITH_THIS_USERNAME,
-                        'email': settings.THERE_IS_USER_WITH_THIS_EMAIL
-                    }
-                )
-            if user_on_email:
-                raise ValidationError(
-                    {'email': settings.THERE_IS_USER_WITH_THIS_EMAIL})
+        user_on_email = User.objects.filter(email=email).first()
+        user_on_username = User.objects.filter(username=username).first()
+        if user_on_email != user_on_username:
+            error_msg = {}
             if user_on_username:
-                raise ValidationError(
-                    {'username': settings.THERE_IS_USER_WITH_THIS_USERNAME})
+                error_msg['username'] = settings.IS_USER_WITH_THIS_USERNAME
+            if user_on_email:
+                error_msg['email'] = settings.IS_USER_WITH_THIS_EMAIL
+            raise ValidationError(error_msg)
         return data
 
     def save(self):
         username = self.validated_data["username"]
         email = self.validated_data["email"]
-        user, created = User.objects.get_or_create(
+        user, _ = User.objects.get_or_create(
             username=username, email=email
         )
         confirmation_code = default_token_generator.make_token(user)
@@ -187,7 +165,7 @@ class UserSerializer(Serializer):
 
 class UserGetTokenSerializer(Serializer):
     confirmation_code = CharField(
-        max_length=settings.MAX_LENGTH_EMAIL, required=True
+        required=True
     )
     username = CharField(
         max_length=settings.MAX_LENGTH_USERNAME,
