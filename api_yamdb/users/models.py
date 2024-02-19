@@ -40,13 +40,6 @@ class User(AbstractUser):
     def is_moderator(self):
         return self.role == settings.MODERATOR_ROLE
 
-
-    def is_admin(self):
-        return self.role == settings.ADMIN_ROLE
-
-    @property
-    def superuser(self):
-        return self.role == settings.ADMIN_ROLE and self.is_superuser
     
     @property
     def superuser(self):

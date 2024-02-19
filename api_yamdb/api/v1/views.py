@@ -139,7 +139,7 @@ class UserModelViewSet(ModelViewSet):
 def register_user_view(request):
     serializer = UserSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    data = serializer.create()
+    data = serializer.save()
     return Response(data=data, status=status.HTTP_200_OK)
 
 

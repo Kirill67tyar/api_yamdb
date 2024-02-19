@@ -189,7 +189,7 @@ class UserSerializer(Serializer):
                     {'username': settings.THERE_IS_USER_WITH_THIS_USERNAME})
         return data
 
-    def create(self):
+    def save(self):
         username = self.validated_data["username"]
         email = self.validated_data["email"]
         user, created = User.objects.get_or_create(
