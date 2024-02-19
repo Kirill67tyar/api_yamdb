@@ -17,11 +17,17 @@ from users.validators import validate_username
 
 User = get_user_model()
 
+# ! -=-=-=- неиспользуемые константы -=-=-=-
+NO_USER_WITH_THIS_USERNAME = "Нет пользователя с таким username"
+ROLE_CANNOT_BE_OWNER = "Роль не может быть 'owner'"
+USERNAME_SHOULD_NOT_HAVE_VALUE_ME = "Username не должен иметь значение 'me'"
+# ! -=-=-=- неиспользуемые константы -=-=-=-
+
 
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
-        exclude = ("id",)
+        fields = ("name", "slug",)
         model = Category
         lookup_field = "slug"
 
@@ -29,15 +35,27 @@ class CategorySerializer(serializers.ModelSerializer):
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
-        exclude = ("id",)
+        fields = ("name", "slug",)
         model = Genre
         lookup_field = "slug"
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
+    # category = CategorySerializer(read_only=True)
+    category = serializers.SerializerMethodField(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
     rating = serializers.IntegerField(read_only=True, default=None)
+
+    def get_category(self, obj):
+        if obj.category:
+            return {
+                "name": obj.category.name,
+                "slug": obj.category.slug
+            }
+        return {
+            "name": "string",
+            "slug": "string"
+        }
 
     class Meta:
         model = Title
@@ -57,7 +75,8 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         queryset=Category.objects.all(), slug_field="slug"
     )
     genre = serializers.SlugRelatedField(
-        queryset=Genre.objects.all(), slug_field="slug", many=True
+        queryset=Genre.objects.all(), slug_field="slug", many=True,
+        # required=True
     )
 
     class Meta:
@@ -70,6 +89,13 @@ class TitleWriteSerializer(serializers.ModelSerializer):
             "genre",
             "category",
         )
+
+    def validate_genre(self, value):
+        if not value:
+            raise ValidationError(
+                'Ошибка: нельзя подписываться на самого себя.'
+            )
+        return value
 
     def to_representation(self, title):
         return TitleReadSerializer(title).data
@@ -101,14 +127,6 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class ExtendedUserModelSerializer(ModelSerializer):
-    email = EmailField(
-        max_length=254,
-        required=True,
-        validators=[UniqueValidator(
-            queryset=User.objects.all(), message=settings.EMAIL_IS_NOT_UNIQUE
-        )
-        ],
-    )
 
     class Meta:
         model = User
@@ -123,13 +141,15 @@ class ExtendedUserModelSerializer(ModelSerializer):
 
 
 class UserSerializer(Serializer):
-    email = EmailField(max_length=settings.MAX_LENGTH_EMAIL, required=True)
+    email = EmailField(
+        max_length=settings.MAX_LENGTH_EMAIL,
+        required=True,
+    )
     username = CharField(
-        max_length=150,
+        max_length=settings.MAX_LENGTH_USERNAME,
         required=True,
         validators=[
-            UnicodeUsernameValidator(
-                message=settings.INVALID_USERNAME_FIELD_FORMAT),
+            UnicodeUsernameValidator(),
             validate_username
         ],
     )
@@ -137,34 +157,41 @@ class UserSerializer(Serializer):
     def validate(self, data):
         username = data["username"]
         email = data["email"]
-        if User.objects.filter(
-            Q(email=email) & ~Q(username=username)
-        ).exists():
-            raise ValidationError(settings.THERE_IS_USER_WITH_THIS_EMAIL)
-        if User.objects.filter(
-            ~Q(email=email) & Q(username=username)
-        ).exists():
-            raise ValidationError(settings.THERE_IS_USER_WITH_THIS_USERNAME)
-        return data
-
-    def create(self):
-        username = self.validated_data["username"]
-        email = self.validated_data["email"]
+        if (username and not email) or (not username and email):
+            raise ValidationError('asdas')
         user = get_object_or_null(
             User,
             username=username,
-            email=email
-        )
-        if user:
-            confirmation_code = default_token_generator.make_token(user)
-            send_email_confirmation_code(
-                confirmation_code=confirmation_code,
-                email=user.email,
-            )
-            return self.validated_data
-        user = User.objects.create(
-            username=username,
             email=email,
+        )
+        user_username = get_object_or_null(User, username=username)
+        user_email = get_object_or_null(User, email=email)
+        if (user_username and user_email) and (not user):
+            raise ValidationError(
+                {
+                    'username': settings.THERE_IS_USER_WITH_THIS_USERNAME,
+                    'email': settings.THERE_IS_USER_WITH_THIS_EMAIL
+                }
+            )
+        if not user:
+            if User.objects.filter(
+                email=email
+            ).exists():
+                raise ValidationError(
+                    {'email': settings.THERE_IS_USER_WITH_THIS_EMAIL})
+            if User.objects.filter(
+                username=username
+            ).exists():
+                raise ValidationError(
+                    {'username': settings.THERE_IS_USER_WITH_THIS_USERNAME})
+        return data
+
+    def save(self):
+        username = self.validated_data["username"]
+        email = self.validated_data["email"]
+        user, created = User.objects.get_or_create(
+            username=username,
+            email=email
         )
         confirmation_code = default_token_generator.make_token(user)
         send_email_confirmation_code(
@@ -176,14 +203,12 @@ class UserSerializer(Serializer):
 
 class UserGetTokenSerializer(Serializer):
     confirmation_code = CharField(
-        max_length=settings.MAX_LENGTH_EMAIL, required=True
-    )
+        max_length=settings.MAX_LENGTH_EMAIL, required=True)
     username = CharField(
-        max_length=150,
+        max_length=settings.MAX_LENGTH_USERNAME,
         required=True,
         validators=[
-            UnicodeUsernameValidator(
-                message=settings.USERNAME_IS_NOT_UNIQUE),
+            UnicodeUsernameValidator(),
             validate_username
         ],
     )
@@ -196,8 +221,7 @@ class UserGetTokenSerializer(Serializer):
         return data
 
     def get_user(self):
-        username = self.validated_data['username']
         return get_object_or_404(
             User,
-            username=username,
+            username=self.validated_data['username'],
         )

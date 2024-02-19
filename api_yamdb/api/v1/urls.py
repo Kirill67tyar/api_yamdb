@@ -25,7 +25,6 @@ urlpatterns_v1 = [
     path("auth/signup/", register_user_view, name="signup"),
     path(
         'auth/token/',
-        # TokenObtainPairView.as_view(),
         get_token_view,
         name='token_obtain_pair'
     )

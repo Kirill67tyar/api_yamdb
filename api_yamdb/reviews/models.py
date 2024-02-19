@@ -2,16 +2,11 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from api_yamdb.settings import (
-    MAX_LENGHT,
-    MAX_SLICE,
-    MAX_VALIDATOR_VALUE,
-    MIN_VALIDATOR_VALUE,
-    VALUE_CANNOT_BE_LESS_THAN,
-    VALUE_CANNOT_BE_MORE_THAN
-)
-from .validators import validate_year
+from api_yamdb.settings import (MAX_LENGHT, MAX_SLICE, MAX_VALIDATOR_VALUE,
+                                MIN_VALIDATOR_VALUE)
 
+VALUE_CANNOT_BE_LESS_THAN_1 = "Значение не может быть меньше 1"
+VALUE_CANNOT_BE_MORE_THAN_10 = "Значение не может быть больше 10"
 
 User = get_user_model()
 
@@ -41,12 +36,11 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+from reviews.validators import validate_year
 
 class Title(models.Model):
     name = models.CharField("Название произведения", max_length=MAX_LENGHT)
-    year = models.PositiveSmallIntegerField(
-        "Год выпуска", validators=(validate_year, )
-    )
+    year = models.PositiveSmallIntegerField("Год выпуска", validators=[validate_year,])
     description = models.TextField(
         "Описание", max_length=MAX_LENGHT, blank=True
     )
@@ -60,7 +54,7 @@ class Title(models.Model):
     )
 
     class Meta:
-        ordering = ("name", "year",)
+        ordering = ("-year",)
         verbose_name = "Произведение"
         verbose_name_plural = "Произведения"
         default_related_name = "titles"
@@ -88,17 +82,10 @@ class Review(ReviewCommentAbstractModel):
         "Рейтинг",
         validators=[
             MinValueValidator(
-                MIN_VALIDATOR_VALUE,
-                message=(
-                    VALUE_CANNOT_BE_LESS_THAN.format(value=MIN_VALIDATOR_VALUE)
-                )
+                MIN_VALIDATOR_VALUE, message=VALUE_CANNOT_BE_LESS_THAN_1
             ),
             MaxValueValidator(
-                MAX_VALIDATOR_VALUE,
-                message=(
-                    VALUE_CANNOT_BE_MORE_THAN.format(value=MAX_VALIDATOR_VALUE)
-                )
-            ),
+                MAX_VALIDATOR_VALUE, message=VALUE_CANNOT_BE_MORE_THAN_10),
         ],
     )
 

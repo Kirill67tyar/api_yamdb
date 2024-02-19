@@ -21,6 +21,7 @@ from api.v1.serializers import (CategorySerializer, CommentSerializer,
 from api.v1.viewsets import ListCreateDestroyModelViewSet
 from reviews.models import Category, Genre, Review, Title
 
+
 User = get_user_model()
 
 
@@ -51,6 +52,12 @@ class TitleViewSet(viewsets.ModelViewSet):
         "patch",
         "delete",
     ]
+    filterset_fields = (
+        'category',
+        'genre',
+        'name',
+        'year',
+    )
 
     def get_serializer_class(self):
         if self.action in ("list", "retrieve"):
@@ -132,7 +139,7 @@ class UserModelViewSet(ModelViewSet):
 def register_user_view(request):
     serializer = UserSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    data = serializer.create()
+    data = serializer.save()
     return Response(data=data, status=status.HTTP_200_OK)
 
 
