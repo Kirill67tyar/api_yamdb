@@ -52,7 +52,10 @@ class TitleReadSerializer(serializers.ModelSerializer):
                 "name": obj.category.name,
                 "slug": obj.category.slug
             }
-        return {}
+        return {
+            "name": "string",
+            "slug": "string"
+        }
 
     class Meta:
         model = Title
@@ -72,7 +75,8 @@ class TitleWriteSerializer(serializers.ModelSerializer):
         queryset=Category.objects.all(), slug_field="slug"
     )
     genre = serializers.SlugRelatedField(
-        queryset=Genre.objects.all(), slug_field="slug", many=True
+        queryset=Genre.objects.all(), slug_field="slug", many=True,
+        # required=True
     )
 
     class Meta:
@@ -85,6 +89,13 @@ class TitleWriteSerializer(serializers.ModelSerializer):
             "genre",
             "category",
         )
+
+    def validate_genre(self, value):
+        if not value:
+            raise ValidationError(
+                'Ошибка: нельзя подписываться на самого себя.'
+            )
+        return value
     # def to_representation(self, instance):
     #     data = super().to_representation(instance)
     #     return TitleReadSerializer(instance).to_representation(data)
@@ -133,7 +144,10 @@ class ExtendedUserModelSerializer(ModelSerializer):
 
 
 class UserSerializer(Serializer):
-    email = EmailField(max_length=settings.MAX_LENGTH_EMAIL, required=True)
+    email = EmailField(
+        max_length=settings.MAX_LENGTH_EMAIL,
+        required=True,
+    )
     username = CharField(
         max_length=settings.MAX_LENGTH_USERNAME,
         required=True,
@@ -146,16 +160,33 @@ class UserSerializer(Serializer):
     def validate(self, data):
         username = data["username"]
         email = data["email"]
-        if User.objects.filter(
-            Q(email=email) & ~Q(username=username)
-        ).exists():
+        if (username and not email) or (not username and email):
+            raise ValidationError('asdas')
+        user = get_object_or_null(
+            User,
+            username=username,
+            email=email,
+        )
+        user_username = get_object_or_null(User, username=username)
+        user_email = get_object_or_null(User, email=email)
+        if (user_username and user_email) and (not user):
             raise ValidationError(
-                {'email': settings.THERE_IS_USER_WITH_THIS_EMAIL})
-        if User.objects.filter(
-            ~Q(email=email) & Q(username=username)
-        ).exists():
-            raise ValidationError(
-                {'username': settings.THERE_IS_USER_WITH_THIS_USERNAME})
+                {
+                    'username': settings.THERE_IS_USER_WITH_THIS_USERNAME,
+                    'email': settings.THERE_IS_USER_WITH_THIS_EMAIL
+                }
+            )
+        if not user:
+            if User.objects.filter(
+                email=email
+            ).exists():
+                raise ValidationError(
+                    {'email': settings.THERE_IS_USER_WITH_THIS_EMAIL})
+            if User.objects.filter(
+                username=username
+            ).exists():
+                raise ValidationError(
+                    {'username': settings.THERE_IS_USER_WITH_THIS_USERNAME})
         return data
 
     def create(self):

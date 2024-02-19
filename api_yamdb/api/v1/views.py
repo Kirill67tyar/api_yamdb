@@ -22,7 +22,6 @@ from api.v1.viewsets import ListCreateDestroyModelViewSet
 from reviews.models import Category, Genre, Review, Title
 
 
-
 User = get_user_model()
 
 
@@ -53,6 +52,12 @@ class TitleViewSet(viewsets.ModelViewSet):
         "patch",
         "delete",
     ]
+    filterset_fields = (
+        'category',
+        'genre',
+        'name',
+        'year',
+    )
 
     def get_serializer_class(self):
         if self.action in ("list", "retrieve"):

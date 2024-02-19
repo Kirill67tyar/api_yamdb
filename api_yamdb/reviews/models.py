@@ -36,10 +36,11 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+from reviews.validators import validate_year
 
 class Title(models.Model):
     name = models.CharField("Название произведения", max_length=MAX_LENGHT)
-    year = models.PositiveSmallIntegerField("Год выпуска")
+    year = models.PositiveSmallIntegerField("Год выпуска", validators=[validate_year,])
     description = models.TextField(
         "Описание", max_length=MAX_LENGHT, blank=True
     )
