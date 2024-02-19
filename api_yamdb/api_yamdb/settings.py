@@ -145,6 +145,9 @@ EMAIL_REQUIRED = 'email является обязательным полем'
 
 
 ERROR_BAD_REQUEST = "Вы уже отправляли отзыв на это произведение"
+VALUE_CANNOT_BE_LESS_THAN = "Значение не может быть меньше {value}"
+VALUE_CANNOT_BE_MORE_THAN = "Значение не может быть больше {value}"
+VALIDATE_YEAR_ERROR = ("{value} не может быть больше {now}")
 
 
 # ! -=-=-=- неиспользуемые константы -=-=-=-
@@ -152,4 +155,3 @@ NO_USER_WITH_THIS_USERNAME = "Нет пользователя с таким user
 ROLE_CANNOT_BE_OWNER = "Роль не может быть 'owner'"
 USERNAME_SHOULD_NOT_HAVE_VALUE_ME = "Username не должен иметь значение 'me'"
 # ! -=-=-=- неиспользуемые константы -=-=-=-
-

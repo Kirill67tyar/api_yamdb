@@ -96,9 +96,6 @@ class TitleWriteSerializer(serializers.ModelSerializer):
                 'Ошибка: нельзя подписываться на самого себя.'
             )
         return value
-    # def to_representation(self, instance):
-    #     data = super().to_representation(instance)
-    #     return TitleReadSerializer(instance).to_representation(data)
 
     def to_representation(self, title):
         return TitleReadSerializer(title).data

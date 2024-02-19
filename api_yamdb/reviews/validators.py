@@ -1,13 +1,15 @@
-from django.core.exceptions import ValidationError
-from django.utils import timezone
 
 from django.core import validators
 from django.core.exceptions import ValidationError
-from django.utils.deconstruct import deconstructible
-from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 
-USERNAME_SHOULD_NOT_HAVE_VALUE_ME = "Username не должен иметь значение 'me'"
+from api_yamdb.settings import VALIDATE_YEAR_ERROR
 
+
+def validate_year(value):
+    now = timezone.now().year
+    if value > now:
+        raise ValidationError(VALIDATE_YEAR_ERROR.format(value=value, now=now))
 
 def validate_username(value):
     if value == "me":
@@ -25,10 +27,4 @@ class MyUnicodeUsernameValidator(validators.RegexValidator):
     flags = 0
 
 
-# from api_yamdb.settings import VALIDATE_YEAR_ERROR
 
-def validate_year(value):
-    now = timezone.now().year
-    if value > now:
-        # raise ValidationError(VALIDATE_YEAR_ERROR.format(value=value, now=now))
-        raise ValidationError('asdasda')
