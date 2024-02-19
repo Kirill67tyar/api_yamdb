@@ -1,18 +1,15 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from api_yamdb.settings import (MAX_LENGHT, MAX_SLICE, MAX_VALIDATOR_VALUE,
-                                MIN_VALIDATOR_VALUE)
-
-VALUE_CANNOT_BE_LESS_THAN_1 = "Значение не может быть меньше 1"
-VALUE_CANNOT_BE_MORE_THAN_10 = "Значение не может быть больше 10"
+from reviews.validators import validate_year
 
 User = get_user_model()
 
 
 class Genre(models.Model):
-    name = models.CharField("Имя жанра", max_length=MAX_LENGHT)
+    name = models.CharField("Имя жанра", max_length=settings.MAX_LENGHT)
     slug = models.SlugField("Тег жанра", unique=True)
 
     class Meta:
@@ -25,7 +22,7 @@ class Genre(models.Model):
 
 
 class Category(models.Model):
-    name = models.CharField("Имя категории", max_length=MAX_LENGHT)
+    name = models.CharField("Имя категории", max_length=settings.MAX_LENGHT)
     slug = models.SlugField("Тег категории", unique=True)
 
     class Meta:
@@ -36,13 +33,16 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-from reviews.validators import validate_year
 
 class Title(models.Model):
-    name = models.CharField("Название произведения", max_length=MAX_LENGHT)
-    year = models.PositiveSmallIntegerField("Год выпуска", validators=[validate_year,])
+    name = models.CharField(
+        "Название произведения", max_length=settings.MAX_LENGHT
+    )
+    year = models.PositiveSmallIntegerField(
+        "Год выпуска", validators=[validate_year,]
+    )
     description = models.TextField(
-        "Описание", max_length=MAX_LENGHT, blank=True
+        "Описание", max_length=settings.MAX_LENGHT, blank=True
     )
     genre = models.ManyToManyField(Genre, verbose_name="Жанр")
     category = models.ForeignKey(
@@ -82,10 +82,12 @@ class Review(ReviewCommentAbstractModel):
         "Рейтинг",
         validators=[
             MinValueValidator(
-                MIN_VALIDATOR_VALUE, message=VALUE_CANNOT_BE_LESS_THAN_1
+                settings.MIN_VALIDATOR_VALUE,
+                message=settings.VALUE_CANNOT_BE_LESS_THAN
             ),
             MaxValueValidator(
-                MAX_VALIDATOR_VALUE, message=VALUE_CANNOT_BE_MORE_THAN_10),
+                settings.MAX_VALIDATOR_VALUE,
+                message=settings.VALUE_CANNOT_BE_MORE_THAN),
         ],
     )
 
@@ -101,7 +103,7 @@ class Review(ReviewCommentAbstractModel):
         ]
 
     def __str__(self):
-        return self.text[:MAX_SLICE]
+        return self.text[:settings.MAX_SLICE]
 
 
 class Comment(ReviewCommentAbstractModel):
@@ -121,4 +123,4 @@ class Comment(ReviewCommentAbstractModel):
         default_related_name = "comments"
 
     def __str__(self):
-        return self.text[:MAX_SLICE]
+        return self.text[:settings.MAX_SLICE]

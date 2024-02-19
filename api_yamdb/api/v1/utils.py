@@ -6,7 +6,7 @@ from django.db.models.query import QuerySet
 
 def send_email_confirmation_code(confirmation_code, email):
     return send_mail(
-        subject="Получение кода подтверждения",
+        subject=settings.GETTING_CONFIRMATION_CODE,
         message=confirmation_code,
         from_email=settings.EMAIL_HOST_USER,
         recipient_list=[
@@ -17,6 +17,7 @@ def send_email_confirmation_code(confirmation_code, email):
 
 
 def get_object_or_null(model, **kwargs):
-    if isinstance(model, QuerySet) or isinstance(model, BaseManager):
+    """Получает объект модели или возвращает None"""
+    if isinstance(model, (QuerySet, BaseManager)):
         return model.filter(**kwargs).first()
     return model.objects.filter(**kwargs).first()

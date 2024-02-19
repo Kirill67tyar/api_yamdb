@@ -1,7 +1,9 @@
-from django.conf import settings
-from rest_framework.permissions import (SAFE_METHODS, BasePermission,
-                                        IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import (
+    SAFE_METHODS,
+    BasePermission,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 
 
 class IsAdminOrReadOnly(BasePermission):
@@ -12,8 +14,15 @@ class IsAdminOrReadOnly(BasePermission):
     """
 
     def has_permission(self, request, view):
-        return (request.method in SAFE_METHODS) or (request.user and request.user.is_authenticated and request.user.superuser)
-        
+        return bool(
+            request.method in SAFE_METHODS
+            or (
+                request.user
+                and request.user.is_authenticated
+                and request.user.superuser
+            )
+        )
+
 
 class IsAdminOrModeratorOrReadOnly(IsAuthenticatedOrReadOnly):
     """
@@ -33,11 +42,16 @@ class IsAdminOrModeratorOrReadOnly(IsAuthenticatedOrReadOnly):
             or request.user.is_moderator
         )
 
+
 class IsAdminOrOwner(IsAuthenticated):
+    """
+    Доступ разрушён если клиент аутентифицирован.
+    Является суперюзером, или его роль admin.
+    """
 
     def has_permission(self, request, view):
-        """
-        Доступ разрушён если клиент аутентифицирован.
-        Является суперюзером, или его роль admin.
-        """
-        return bool(request.user and request.user.is_authenticated and request.user.superuser)
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.superuser
+        )

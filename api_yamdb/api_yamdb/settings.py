@@ -126,11 +126,9 @@ MAX_LENGHT = 256
 MAX_SLICE = 30
 MIN_VALIDATOR_VALUE = 1
 MAX_VALIDATOR_VALUE = 10
-
-
 CONFIRMATION_CODE_IS_NOT_VALID = "Код подтверждения не валиден"
-EMAIL_IS_NOT_UNIQUE = "Email не уникален."
-USERNAME_IS_NOT_UNIQUE = "Username не уникален."
+EMAIL_IS_NOT_UNIQUE = "Email не уникален"
+USERNAME_IS_NOT_UNIQUE = "Username не уникален"
 INVALID_USERNAME_FIELD_FORMAT = "Неправильный формат поля username"
 THERE_IS_USER_WITH_THIS_EMAIL = (
     "Пользователь с таким email уже зарегистрирован"
@@ -141,17 +139,11 @@ THERE_IS_USER_WITH_THIS_USERNAME = (
 MAX_LENGTH_ROLE = 25
 MAX_LENGTH_EMAIL = 254
 MAX_LENGTH_USERNAME = 150
-EMAIL_REQUIRED = 'email является обязательным полем'
-
-
+EMAIL_REQUIRED = 'Email является обязательным полем'
 ERROR_BAD_REQUEST = "Вы уже отправляли отзыв на это произведение"
 VALUE_CANNOT_BE_LESS_THAN = "Значение не может быть меньше {value}"
 VALUE_CANNOT_BE_MORE_THAN = "Значение не может быть больше {value}"
 VALIDATE_YEAR_ERROR = ("{value} не может быть больше {now}")
-
-
-# ! -=-=-=- неиспользуемые константы -=-=-=-
-NO_USER_WITH_THIS_USERNAME = "Нет пользователя с таким username"
-ROLE_CANNOT_BE_OWNER = "Роль не может быть 'owner'"
+GENRE_SHOULD_NOT_BE_EMPTY = "Жанр не должен быть пустым"
+GETTING_CONFIRMATION_CODE = "Получение кода подтверждения"
 USERNAME_SHOULD_NOT_HAVE_VALUE_ME = "Username не должен иметь значение 'me'"
-# ! -=-=-=- неиспользуемые константы -=-=-=-
