@@ -39,7 +39,7 @@ class Title(models.Model):
         "Название произведения", max_length=settings.MAX_LENGHT
     )
     year = models.PositiveSmallIntegerField(
-        "Год выпуска", validators=[validate_year,]
+        "Год выпуска", validators=[validate_year, ]
     )
     description = models.TextField(
         "Описание", max_length=settings.MAX_LENGHT, blank=True
